@@ -8,12 +8,18 @@ import type { AreaResumen } from "./features/checkins/types/resumen";
 function App() {
   const [results, setResults] = useState<AreaResumen[]>([]);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [message, setMessage] = useState<string | null>(null);
+
 
   const handlePdfText = (raw: string) => {
     const parsed = parsePdfText(raw);
-    console.log("✅ Resultado parseado:", parsed);
-
     setResults(parsed);
+
+    if (parsed.length === 0) {
+      setMessage("No se encontraron voluntarios en el horario.");
+    } else {
+      setMessage(null); // Limpiar mensaje si hay resultados
+    }
   };
 
   const toggleSortOrder = () => {
@@ -43,9 +49,16 @@ function App() {
       <h1 className="text-2xl font-bold mb-4">Resumen Inventario Etiquetas Lince</h1>
       <PdfUploader onExtracted={handlePdfText} />
 
+      {/* Mostrar mensaje si existe, aunque no haya resultados */}
+      {message && (
+        <div className="my-4 text-red-600 font-semibold">
+          {message}
+        </div>
+      )}
+
       {results.length > 0 && (
         <>
-          <div className="flex gap-5 my-4">
+          <div className="flex gap-5 my-4 top-5">
             <button
               onClick={copyToClipboard}
               className="fade-in flex items-center gap-2 px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700"
@@ -69,6 +82,7 @@ function App() {
               <span className="material-symbols-outlined">drive_export</span>
               Exportar Google
             </button>
+
           </div>
 
           <TableResumen
