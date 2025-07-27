@@ -46,7 +46,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center p-8">
-      <h1 className="text-2xl font-bold mb-4">Resumen Inventario Etiquetas Lince</h1>
+      <h1 className="text-2xl font-bold mb-4">Resumen Inventario Etiquetas</h1>
       <PdfUploader onExtracted={handlePdfText} />
 
       {/* Mostrar mensaje si existe, aunque no haya resultados */}
