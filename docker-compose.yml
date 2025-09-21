@@ -1,0 +1,30 @@
+services:
+  app_stable:
+    image: ghcr.io/ariasbenraq/checkin-report:${IMAGE_TAG_STABLE}
+    container_name: checkin-report-stable
+    restart: unless-stopped
+    ports:
+      - "${HOST_PORT_STABLE}:80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost/ || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    networks: [app-net]
+
+  app_canary:
+    image: ghcr.io/ariasbenraq/checkin-report:${IMAGE_TAG_CANARY}
+    container_name: checkin-report-canary
+    restart: unless-stopped
+    ports:
+      - "${HOST_PORT_CANARY}:80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost/ || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    networks: [app-net]
+
+networks:
+  app-net:
+    driver: bridge
