@@ -4,9 +4,10 @@ interface TableResumenProps {
   data: AreaResumen[];
   sortOrder: "asc" | "desc";
   onToggleSort: () => void;
+  lateLabel?: string; // NUEVO
 }
 
-const TableResumen = ({ data, sortOrder, onToggleSort }: TableResumenProps) => {
+const TableResumen = ({ data, sortOrder, onToggleSort, lateLabel = 'Llegaron después del umbral' }: TableResumenProps) => {
   return (
     <div className="max-w-4xl mx-auto rounded-xl shadow-lg overflow-hidden">
       <div className="overflow-y-auto max-h-[500px]">
@@ -20,7 +21,7 @@ const TableResumen = ({ data, sortOrder, onToggleSort }: TableResumenProps) => {
                 Área {sortOrder === "asc" ? "🔼" : "🔽"}
               </th>
               <th className="px-4 py-2 text-center whitespace-nowrap">Total voluntarios</th>
-              <th className="px-4 py-2 text-center whitespace-nowrap">Llegaron después de 7:00am</th>
+              <th className="px-4 py-2 text-center whitespace-nowrap">{lateLabel}</th>
             </tr>
           </thead>
           <tbody className="bg-white">

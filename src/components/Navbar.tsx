@@ -1,5 +1,4 @@
-// components/Navbar.tsx
-
+// src/components/Navbar.tsx
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/react';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 
@@ -9,7 +8,7 @@ interface NavbarProps {
 }
 
 const navigation = [
-  { name: 'Home', key: 'home' },
+  { name: 'Instrucciones', key: 'home' },
   { name: 'Cargar PDF', key: 'upload' },
   { name: 'PDFs Registrados', key: 'list' },
 ];
