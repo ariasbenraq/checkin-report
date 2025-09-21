@@ -79,10 +79,10 @@ const SERVICE_TIMES: ServiceTimeConfig[] = [
     },
 ];
 
-const isInTotal = (min: number, cfg: ServiceTimeConfig) =>
-    cfg.total.fromMinutes === null ? min <= cfg.total.toMinutes
-        : min >= cfg.total.fromMinutes && min <= cfg.total.toMinutes;
-const isAfterVios = (min: number, cfg: ServiceTimeConfig) => min > cfg.afterViosMinutes;
+// const isInTotal = (min: number, cfg: ServiceTimeConfig) =>
+//     cfg.total.fromMinutes === null ? min <= cfg.total.toMinutes
+//         : min >= cfg.total.fromMinutes && min <= cfg.total.toMinutes;
+// const isAfterVios = (min: number, cfg: ServiceTimeConfig) => min > cfg.afterViosMinutes;
 
 // --------- cortar el PDF en secciones por encabezado ---------
 // Robusto aunque no haya saltos de línea; usa índices del regex global.
