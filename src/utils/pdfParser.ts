@@ -14,7 +14,7 @@ function clean(str: string): string {
 
 const AREA_PATTERNS: Record<string, string> = {
     "Voluntarios CDV > Alabanzas >": "Alabanza",
-    "Voluntarios CDV > Alabanzas > Asistente de equipo": "Asistente de equipo",
+    // "Voluntarios CDV > Alabanzas > Asistente de equipo": "Asistente de equipo",
     "Voluntarios CDV > Producción Lince > Atmósfera": "Atmósfera",
     "Voluntarios CDV > CDV LINCE > Velover": "Velover",
     "Voluntarios CDV > CDV LINCE > Equipo Bienvenida": "Bienvenida",
@@ -23,6 +23,7 @@ const AREA_PATTERNS: Record<string, string> = {
     "Voluntarios CDV > CDV LINCE > Crecer": "Crecer",
     "Voluntarios CDV > CDV LINCE > Dedicaciones": "Dedicaciones",
     "Voluntarios CDV > Eventos > Registro": "Registro",
+    "Voluntarios CDV > Eventos > Desayuno": "Desayuno",
     "Voluntarios CDV > Voluntario ED": "ED",
     "Voluntarios CDV > CDV LINCE > Equipo Médico": "Equipo Médico",
     "Voluntarios CDV > CDV LINCE > Fin de semana inolvidable": "Fin de semana Inolvidable",
