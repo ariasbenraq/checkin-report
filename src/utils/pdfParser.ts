@@ -1,4 +1,5 @@
 // src/utils/pdfParser.ts
+import { ALL_AREAS } from '../domain/areas';
 import type { AreaResumen } from "../features/checkins/types/resumen";
 import type { ServiceKey } from "../features/checkins/constants";
 
@@ -123,6 +124,12 @@ export function parsePdfTextAllServices(text: string): Record<ServiceKey, AreaRe
         SUN_8A: {}, SUN_10A: {}, SUN_12P: {}
     };
 
+    (Object.keys(acc) as ServiceKey[]).forEach((svc) => {
+        for (const area of ALL_AREAS) {
+            acc[svc][area] = { total: 0, lateCount: 0 };
+        };
+    });
+
     // Acepta 7a / 7am / 7:05a / 7:05am / 12p / 12:00p
     const timeRegex = /(\d{1,2})(?::(\d{2}))?\s*(a|am|p|pm)\b/gi;
 
@@ -141,9 +148,9 @@ export function parsePdfTextAllServices(text: string): Record<ServiceKey, AreaRe
             if (!matchKey) continue;
 
             const areaName: string = AREA_PATTERNS[matchKey];
-            if (!(areaName in acc[cfg.key])) {
-                acc[cfg.key][areaName] = { total: 0, lateCount: 0 };
-            }
+            // if (!(areaName in acc[cfg.key])) {
+            //     acc[cfg.key][areaName] = { total: 0, lateCount: 0 };
+            // }
 
             // 2) Extraer SOLO horas de llegada (NO las horas que van precedidas de "Sunday ")
             for (const tm of block.matchAll(timeRegex) as IterableIterator<RegExpMatchArray>) {
@@ -172,8 +179,16 @@ export function parsePdfTextAllServices(text: string): Record<ServiceKey, AreaRe
     }
 
     // 4) Pasar a AreaResumen[]
+    // const toResumen = (m: Record<string, { total: number; lateCount: number }>): AreaResumen[] =>
+    //     Object.entries(m).map(([area, v]) => ({ area, total: v.total, lateCount: v.lateCount }));
+
+    // 4) Pasar a AreaResumen[] mapeando SIEMPRE sobre la lista canónica (fija orden y asegura 0s)
     const toResumen = (m: Record<string, { total: number; lateCount: number }>): AreaResumen[] =>
-        Object.entries(m).map(([area, v]) => ({ area, total: v.total, lateCount: v.lateCount }));
+        ALL_AREAS.map((area) => ({
+            area,
+            total: m[area]?.total ?? 0,
+            lateCount: m[area]?.lateCount ?? 0,
+        }));
 
     return {
         SUN_8A: toResumen(acc.SUN_8A),

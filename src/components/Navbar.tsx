@@ -26,7 +26,7 @@ export default function Navbar({ current, onNavigate }: NavbarProps) {
             <div className="flex h-12 items-center justify-between">
               <div className="flex items-center">
                 <div className="flex-shrink-0 text-white font-bold text-lg">
-                  Etiquetas CDV
+                  logistica CDV
                 </div>
                 <div className="hidden sm:block sm:ml-6">
                   <div className="flex space-x-4">

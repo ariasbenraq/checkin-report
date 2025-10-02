@@ -2,7 +2,7 @@
 import { useMemo, useState } from "react";
 import PdfUploader from "../components/PdfUploader";
 import TableResumen from "../components/TableResumen";
-import { exportToExcel } from "../features/checkins/services/exportExcel";
+// import { exportToExcel } from "../features/checkins/services/exportExcel";
 import type { AreaResumen } from "../features/checkins/types/resumen";
 import { parsePdfTextAllServices } from "../utils/pdfParser";
 import { SERVICE_LABEL, LATE_LABEL, type ServiceKey } from "../features/checkins/constants";
@@ -59,7 +59,7 @@ export default function UploadView() {
 
       {/* Derecha: selector + tabla + botones */}
       <div className="lg:w-2/3 w-full space-y-4">
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-4 items-center justify-center lg:justify-start">
           {(["SUN_8A","SUN_10A","SUN_12P"] as ServiceKey[]).map(key => (
             <button
               key={key}
@@ -70,6 +70,13 @@ export default function UploadView() {
               {SERVICE_LABEL[key]}
             </button>
           ))}
+          <button
+            onClick={copyToClipboard}
+            className="inline-flex items-center gap-2 rounded-md bg-yellow-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-yellow-600"
+          >
+            <span className="material-symbols-outlined text-base">content_copy</span>
+            Copiar tabla
+          </button>
         </div>
 
         {message && <div className="text-center text-red-600 font-semibold">{message}</div>}
@@ -81,7 +88,7 @@ export default function UploadView() {
           lateLabel={LATE_LABEL[selected]}
         />
 
-        <div className="flex justify-center gap-4 mt-2 flex-wrap">
+        {/* <div className="flex justify-center gap-4 mt-2 flex-wrap">
           <button
             onClick={copyToClipboard}
             className="inline-flex items-center gap-2 rounded-md bg-yellow-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-yellow-600"
@@ -105,7 +112,7 @@ export default function UploadView() {
             <span className="material-symbols-outlined text-base">drive_export</span>
             Exportar Google
           </button>
-        </div>
+        </div> */}
       </div>
     </div>
   );
