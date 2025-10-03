@@ -3,6 +3,7 @@ import { useState } from "react";
 import Navbar from "./components/Navbar";
 import UploadView from "./pages/UploadView";
 import Home from "./pages/Home"; // <— NUEVO
+import ListView from "./pages/ListView";
 
 export default function App() {
   const [currentView, setCurrentView] = useState<"home" | "upload" | "list">("upload");
@@ -24,11 +25,7 @@ export default function App() {
           </>
         )}
 
-        {currentView === "list" && (
-          <div className="text-center text-xl text-gray-600 mt-10">
-            📄 Lista de PDFs registrados (próximamente)
-          </div>
-        )}
+        {currentView === "list" && <ListView />}
       </main>
     </div>
   );

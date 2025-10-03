@@ -5,7 +5,7 @@ import "pdfjs-dist/build/pdf.worker.entry";
 pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
 interface PdfUploaderProps {
-  onExtracted: (text: string) => void;
+  onExtracted: (text: string, file: File) => void;
 }
 
 const PdfUploader = ({ onExtracted }: PdfUploaderProps) => {
@@ -43,7 +43,7 @@ const PdfUploader = ({ onExtracted }: PdfUploaderProps) => {
       }
 
       setLoading(false);
-      onExtracted(fullText);
+      onExtracted(fullText, file);
     };
 
     reader.readAsArrayBuffer(file);
