@@ -26,13 +26,13 @@ function toParserDetalles(rows: AreaResumen[]): ParserDetalle[] {
   }));
 }
 
-function pad(n: number) { return String(n).padStart(2, "0"); }
+// function pad(n: number) { return String(n).padStart(2, "0"); }
 
-function todayISO(): string {
-  // fecha local (no UTC) → ISO YYYY-MM-DD
-  const now = new Date();
-  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
-}
+// function todayISO(): string {
+//   // fecha local (no UTC) → ISO YYYY-MM-DD
+//   const now = new Date();
+//   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+// }
 
 export function isoToDisplay(iso?: string): string {
   if (!iso) return "";
