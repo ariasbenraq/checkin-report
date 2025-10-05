@@ -23,7 +23,15 @@ services:
     restart: unless-stopped
     expose:
       - "3000"                      # visible solo dentro de la red de Docker
-    env_file: .env
+    environment:
+	 - NODE_ENV=production
+ 	 - PORT=3000
+ 	 - DB_HOST=pg16
+ 	 - DB_PORT=5432
+ 	 - DB_USER=admin
+ 	 - DB_PASS=CambiaEstaClaveFuerte123!
+ 	 - DB_NAME=logisticacdv
+
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:3000/health || exit 1"]
       interval: 10s
