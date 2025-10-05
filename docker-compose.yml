@@ -23,11 +23,7 @@ services:
     restart: unless-stopped
     expose:
       - "3000"                      # visible solo dentro de la red de Docker
-    environment:
-      - NODE_ENV=production
-      - PORT=3000
-      # - DATABASE_URL=...
-      # - JWT_SECRET=...
+    env_file: .env
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:3000/health || exit 1"]
       interval: 10s
