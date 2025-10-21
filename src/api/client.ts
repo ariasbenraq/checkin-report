@@ -2,7 +2,7 @@
 const BASE = import.meta.env.VITE_API_URL;
 
 export async function postLista(payload: any) {
-    const res = await fetch(`${BASE}/api/listas`, {
+    const res = await fetch(`${BASE}/listas`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
