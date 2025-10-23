@@ -1,6 +1,7 @@
 // src/components/Navbar.tsx
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/react';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+import { getToken, getUsernameFromToken, signOut } from '../utils/auth';
 
 interface NavbarProps {
   current: 'home' | 'upload' | 'list';
@@ -18,12 +19,16 @@ function classNames(...classes: string[]) {
 }
 
 export default function Navbar({ current, onNavigate }: NavbarProps) {
+  const token = getToken();
+  const username = getUsernameFromToken(token || '') || 'Usuario';
+
   return (
     <Disclosure as="nav" className="bg-gray-800">
       {({ open }) => (
         <>
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex h-12 items-center justify-between">
+              {/* IZQUIERDA: brand + nav */}
               <div className="flex items-center">
                 <div className="flex-shrink-0 text-white font-bold text-lg">
                   logistica CDV
@@ -47,6 +52,20 @@ export default function Navbar({ current, onNavigate }: NavbarProps) {
                   </div>
                 </div>
               </div>
+
+              {/* DERECHA: usuario + cerrar sesión (desktop) */}
+              <div className="hidden sm:flex items-center gap-3">
+                <span className="text-gray-300 text-sm">Hola, <strong className="text-white">{username}</strong></span>
+                <button
+                  onClick={signOut}
+                  className="px-3 py-2 rounded-md text-sm font-medium bg-red-600 text-white hover:bg-red-700"
+                  title="Cerrar sesión y cambiar de usuario"
+                >
+                  Cerrar sesión
+                </button>
+              </div>
+
+              {/* Botón hamburguesa (móvil) */}
               <div className="flex sm:hidden">
                 <DisclosureButton className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700">
                   <span className="sr-only">Open main menu</span>
@@ -60,6 +79,7 @@ export default function Navbar({ current, onNavigate }: NavbarProps) {
             </div>
           </div>
 
+          {/* Panel móvil */}
           <DisclosurePanel className="sm:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1">
               {navigation.map((item) => (
@@ -77,6 +97,19 @@ export default function Navbar({ current, onNavigate }: NavbarProps) {
                   {item.name}
                 </DisclosureButton>
               ))}
+            </div>
+
+            {/* Bloque inferior: usuario + cerrar sesión (móvil) */}
+            <div className="border-t border-gray-700 px-4 py-3 flex items-center justify-between">
+              <div className="text-gray-300 text-sm">
+                Sesión: <span className="text-white font-semibold">{username}</span>
+              </div>
+              <button
+                onClick={signOut}
+                className="mt-0 px-3 py-2 rounded-md text-sm font-medium bg-red-600 text-white hover:bg-red-700"
+              >
+                Cerrar sesión
+              </button>
             </div>
           </DisclosurePanel>
         </>
