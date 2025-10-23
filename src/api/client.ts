@@ -1,5 +1,15 @@
 // src/api/client.ts
-const BASE = import.meta.env.VITE_API_URL;
+const RAW_BASE = import.meta.env.VITE_API_URL;
+
+if (!RAW_BASE) {
+  console.warn('VITE_API_URL no está definida. Usando fallback local...');
+}
+
+const BASE = (RAW_BASE || "http://localhost:3000").replace(/\/+$/, "");
+
+function apiUrl(path: string) {
+  return `${BASE}/${String(path || '').replace(/^\/+/, '')}`;
+}
 
 // Helper para obtener token
 function getToken() {
@@ -7,7 +17,10 @@ function getToken() {
 }
 
 // Wrapper común para incluir Authorization si hay token
-async function fetchWithAuth(url: string, options: RequestInit = {}) {
+async function fetchWithAuth(pathOrAbsUrl: string, options: RequestInit = {}) {
+  const isAbsolute = /^https?:\/\//i.test(pathOrAbsUrl);
+  const url = isAbsolute ? pathOrAbsUrl : apiUrl(pathOrAbsUrl);
+
   const token = getToken();
   const headers = {
     ...(options.headers || {}),
@@ -17,37 +30,26 @@ async function fetchWithAuth(url: string, options: RequestInit = {}) {
   const res = await fetch(url, { ...options, headers });
 
   if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`HTTP ${res.status}: ${text}`);
-  }// Manejar 204 o respuestas vacías
-  if (res.status === 204) return null;
-
-  const text = await res.text();
-  if (!text) return null;
-
-  try {
-    return JSON.parse(text);
-  } catch {
-    return text as any; // por si el backend devuelve texto plano
+    const text = await res.text().catch(() => '');
+    throw new Error(`HTTP ${res.status}: ${text || res.statusText}`);
   }
+
+  if (res.status === 204) return null;
+  const text = await res.text().catch(() => '');
+  if (!text) return null;
+  try { return JSON.parse(text); } catch { return text as any; }
 }
 
-export async function postLista(payload: any) {
-  return fetchWithAuth(`${BASE}/listas`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-}
+// ==== API ====
 
-export async function getListas(params?: Record<string, string>) {
-  const qs = params ? "?" + new URLSearchParams(params).toString() : "";
-  return fetchWithAuth(`${BASE}/listas${qs}`);
+export function postLista(payload: any) {
+  return fetchWithAuth('/listas', { method: 'POST', body: JSON.stringify(payload) });
 }
-
-export async function deleteLista(id: number) {
-  return fetchWithAuth(`${BASE}/listas/${id}`, {
-    method: "DELETE",
-  });
+export function getListas(params?: Record<string, string>) {
+  const qs = params ? `?${new URLSearchParams(params).toString()}` : '';
+  return fetchWithAuth(`/listas${qs}`);
+}
+export function deleteLista(id: number) {
+  return fetchWithAuth(`/listas/${id}`, { method: 'DELETE' });
 }
 
