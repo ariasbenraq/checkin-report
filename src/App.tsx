@@ -1,5 +1,5 @@
 // src/App.tsx
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "./components/Navbar";
 import UploadView from "./pages/UploadView";
 import Home from "./pages/Home";
