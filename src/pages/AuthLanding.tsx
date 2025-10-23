@@ -18,7 +18,7 @@ import { signIn } from '../api/client'; // ajusta la ruta según tu alias de pat
  * y redirección tras login (ROUTE_AFTER_LOGIN).
  */
 
-const ROUTE_AFTER_LOGIN = '/app'; // Cambia a tu ruta post-login
+// const ROUTE_AFTER_LOGIN = '/app'; // Cambia a tu ruta post-login
 
 
 // async function httpPost<T>(url: string, data: unknown): Promise<T> {
