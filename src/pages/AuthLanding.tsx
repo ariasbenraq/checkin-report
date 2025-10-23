@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { signIn } from '../api/client'; // ajusta la ruta según tu alias de paths
-import { useNavigate } from 'react-router-dom';
+
 
 
 /**
@@ -72,7 +72,7 @@ export default function AuthLanding() {
   }, [tab]);
 
   const canSignin = siUser.trim().length >= 3 && siPass.length >= 3 && !siLoading;
-  const navigate = useNavigate();
+
   // const canSignup = suUser.trim().length >= 3 && suPass.length >= 8 && !suLoading;
 
   async function onSignin(e?: React.FormEvent) {
@@ -83,7 +83,7 @@ export default function AuthLanding() {
     try {
       const token = await signIn(siUser.trim(), siPass);
       localStorage.setItem('accessToken', token); // 👈 MISMA KEY que usa getToken()
-      navigate(ROUTE_AFTER_LOGIN, { replace: true });  // ej. '/app'
+      window.location.replace('/');
     } catch (err: any) {
       setSiErr(err?.message || 'Error al iniciar sesión');
     } finally {
