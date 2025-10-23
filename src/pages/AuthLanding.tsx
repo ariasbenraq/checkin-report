@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { signIn } from '../api/client'; // ajusta la ruta según tu alias de paths
+
 
 /**
  * AuthLanding.tsx — versión sin librerías UI externas (solo React + Tailwind)
@@ -16,23 +18,23 @@ import React, { useEffect, useRef, useState } from 'react';
  */
 
 const ROUTE_AFTER_LOGIN = '/app'; // Cambia a tu ruta post-login
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
-async function httpPost<T>(url: string, data: unknown): Promise<T> {
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  const contentType = res.headers.get('content-type') || '';
-  const isJson = contentType.includes('application/json');
-  const payload = isJson ? await res.json().catch(() => ({})) : await res.text();
-  if (!res.ok) {
-    const message = (isJson ? (payload as any)?.message : String(payload)) || `HTTP ${res.status}`;
-    throw new Error(Array.isArray(message) ? message.join('. ') : message);
-  }
-  return payload as T;
-}
+
+// async function httpPost<T>(url: string, data: unknown): Promise<T> {
+//   const res = await fetch(url, {
+//     method: 'POST',
+//     headers: { 'Content-Type': 'application/json' },
+//     body: JSON.stringify(data),
+//   });
+//   const contentType = res.headers.get('content-type') || '';
+//   const isJson = contentType.includes('application/json');
+//   const payload = isJson ? await res.json().catch(() => ({})) : await res.text();
+//   if (!res.ok) {
+//     const message = (isJson ? (payload as any)?.message : String(payload)) || `HTTP ${res.status}`;
+//     throw new Error(Array.isArray(message) ? message.join('. ') : message);
+//   }
+//   return payload as T;
+// }
 
 function ErrorBanner({ message }: { message: string }) {
   if (!message) return null;
@@ -54,12 +56,12 @@ export default function AuthLanding() {
   const [siLoading, setSiLoading] = useState(false);
   const [siShow, setSiShow] = useState(false);
 
-  // Signup state
-  const [suUser, setSuUser] = useState('');
-  const [suPass, setSuPass] = useState('');
-  const [suErr, setSuErr] = useState('');
-  const [suLoading, setSuLoading] = useState(false);
-  const [suShow, setSuShow] = useState(false);
+  // // Signup state
+  // const [suUser, setSuUser] = useState('');
+  // const [suPass, setSuPass] = useState('');
+  // const [suErr, setSuErr] = useState('');
+  // const [suLoading, setSuLoading] = useState(false);
+  // const [suShow, setSuShow] = useState(false);
 
   // Auto-focus por pestaña
   const siUserRef = useRef<HTMLInputElement>(null);
@@ -69,7 +71,7 @@ export default function AuthLanding() {
   }, [tab]);
 
   const canSignin = siUser.trim().length >= 3 && siPass.length >= 3 && !siLoading;
-  const canSignup = suUser.trim().length >= 3 && suPass.length >= 8 && !suLoading;
+  // const canSignup = suUser.trim().length >= 3 && suPass.length >= 8 && !suLoading;
 
   async function onSignin(e?: React.FormEvent) {
     e?.preventDefault();
@@ -77,12 +79,9 @@ export default function AuthLanding() {
     setSiErr('');
     setSiLoading(true);
     try {
-      const data = await httpPost<{ accessToken: string }>(`${API_BASE}/auth/signin`, {
-        username: siUser.trim(),
-        password: siPass,
-      });
-      localStorage.setItem('accessToken', data.accessToken);
-      window.location.assign(ROUTE_AFTER_LOGIN);
+      const token = await signIn(siUser.trim(), siPass);
+      localStorage.setItem('accessToken', token); // 👈 MISMA KEY que usa getToken()
+      window.location.assign(ROUTE_AFTER_LOGIN);  // ej. '/app'
     } catch (err: any) {
       setSiErr(err?.message || 'Error al iniciar sesión');
     } finally {
@@ -90,32 +89,33 @@ export default function AuthLanding() {
     }
   }
 
-  async function onSignup(e?: React.FormEvent) {
-    e?.preventDefault();
-    if (!canSignup) return;
-    setSuErr('');
-    setSuLoading(true);
-    try {
-      await httpPost<void>(`${API_BASE}/auth/signup`, {
-        username: suUser.trim(),
-        password: suPass,
-      });
-      setTab('signin');
-      setSiUser(suUser.trim());
-      setSiPass('');
-    } catch (err: any) {
-      setSuErr(err?.message || 'No se pudo crear la cuenta');
-    } finally {
-      setSuLoading(false);
-    }
-  }
+
+  // async function onSignup(e?: React.FormEvent) {
+  //   e?.preventDefault();
+  //   if (!canSignup) return;
+  //   setSuErr('');
+  //   setSuLoading(true);
+  //   try {
+  //     await httpPost<void>(`${API_BASE}/auth/signup`, {
+  //       username: suUser.trim(),
+  //       password: suPass,
+  //     });
+  //     setTab('signin');
+  //     setSiUser(suUser.trim());
+  //     setSiPass('');
+  //   } catch (err: any) {
+  //     setSuErr(err?.message || 'No se pudo crear la cuenta');
+  //   } finally {
+  //     setSuLoading(false);
+  //   }
+  // }
 
   return (
     <div className="min-h-[100dvh] w-full bg-gradient-to-br from-sky-50 via-indigo-50 to-violet-100">
       <div className="mx-auto flex max-w-7xl flex-col items-center justify-center px-6 py-12 md:px-8 lg:px-10">
         <div className="mb-8 text-center">
           <h1 className="mt-4 text-4xl font-extrabold leading-tight tracking-tight text-black md:text-5xl">
-            Logistica CDV 
+            Logistica CDV
           </h1>
           <p className="mx-auto mt-3 max-w-prose text-balance text-sm text-black/60 md:text-base">Inicia sesión para continuar</p>
         </div>
@@ -195,7 +195,7 @@ export default function AuthLanding() {
             </form>
           )}
 
-          {tab === 'signup' && (
+          {/* {tab === 'signup' && (
             <form onSubmit={onSignup} className="space-y-4">
               <ErrorBanner message={suErr} />
               <div className="space-y-2">
@@ -244,7 +244,7 @@ export default function AuthLanding() {
                 {suLoading ? 'Creando cuenta…' : 'Crear cuenta'}
               </button>
             </form>
-          )}
+          )} */}
 
           <div className="mt-4 flex items-center justify-between text-xs text-black/50">
             <span>Protegido con JWT · NestJS</span>

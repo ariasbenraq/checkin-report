@@ -53,3 +53,22 @@ export function deleteLista(id: number) {
   return fetchWithAuth(`/listas/${id}`, { method: 'DELETE' });
 }
 
+// === AUTH ===
+export async function signIn(username: string, password: string) {
+  // Para /auth/signin no necesitas Authorization
+  const res = await fetch(apiUrl('/auth/signin'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password }),
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`HTTP ${res.status}: ${text || res.statusText}`);
+  }
+
+  const data = await res.json(); // { accessToken: '...' }
+  if (!data?.accessToken) throw new Error('No llegó accessToken desde el backend');
+  return data.accessToken as string;
+}
+
