@@ -114,14 +114,13 @@ export default function AuthLanding() {
     <div className="min-h-[100dvh] w-full bg-gradient-to-br from-sky-50 via-indigo-50 to-violet-100">
       <div className="mx-auto flex max-w-7xl flex-col items-center justify-center px-6 py-12 md:px-8 lg:px-10">
         <div className="mb-8 text-center">
-          <span className="inline-block rounded-full border border-black/10 bg-white/70 px-3 py-1 text-xs tracking-wide text-black/60 shadow-sm backdrop-blur">CheckIn · Acceso seguro</span>
           <h1 className="mt-4 text-4xl font-extrabold leading-tight tracking-tight text-black md:text-5xl">
-            Bienvenido a tu panel de <span className="bg-gradient-to-r from-sky-500 to-violet-600 bg-clip-text text-transparent">Check-in</span>
+            Logistica CDV 
           </h1>
-          <p className="mx-auto mt-3 max-w-prose text-balance text-sm text-black/60 md:text-base">Inicia sesión para continuar o crea tu cuenta en segundos. Todo protegido con JWT.</p>
+          <p className="mx-auto mt-3 max-w-prose text-balance text-sm text-black/60 md:text-base">Inicia sesión para continuar</p>
         </div>
 
-        <div className="w-full max-w-xl rounded-2xl border border-black/10 bg-white/80 p-6 shadow-xl backdrop-blur">
+        <div className="w-full max-w-md rounded-2xl border border-black/10 bg-white/80 p-6 shadow-xl backdrop-blur">
           <header className="mb-4">
             <h2 className="text-2xl font-semibold">Tu cuenta</h2>
             <p className="text-sm text-black/60">Usa tu <em>username</em> y una contraseña segura.</p>
