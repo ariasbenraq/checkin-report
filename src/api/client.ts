@@ -22,10 +22,14 @@ async function fetchWithAuth(pathOrAbsUrl: string, options: RequestInit = {}) {
   const url = isAbsolute ? pathOrAbsUrl : apiUrl(pathOrAbsUrl);
 
   const token = getToken();
-  const headers = {
-    ...(options.headers || {}),
+  const isFormData = options.body instanceof FormData;
+  const baseHeaders: Record<string, string> = {
+    ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+    Accept: 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
+
+  const headers = { ...baseHeaders, ...(options.headers as any) };
 
   const res = await fetch(url, { ...options, headers });
 
