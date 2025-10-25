@@ -1,5 +1,5 @@
 // src/pages/UploadView.tsx
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import TableResumen from "../components/TableResumen";
 import type { AreaResumen } from "../features/checkins/types/resumen";
 import { parsePdfTextAllServices } from "../utils/pdfParser";
@@ -8,7 +8,7 @@ import { ServicePicker } from "../components/ServicePicker";
 
 // ⬇️ imports para guardar
 import type { ParserDetalle } from "../features/checkins/buildPayload";
-import UploadDock from "../components/UploadDock";
+
 
 function extractFechaFromName(name: string): string {
   // busca YYYY-MM-DD en el nombre del archivo; si no, hoy
@@ -25,14 +25,6 @@ function toParserDetalles(rows: AreaResumen[]): ParserDetalle[] {
     // observaciones?: (si tuvieses)
   }));
 }
-
-// function pad(n: number) { return String(n).padStart(2, "0"); }
-
-// function todayISO(): string {
-//   // fecha local (no UTC) → ISO YYYY-MM-DD
-//   const now = new Date();
-//   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
-// }
 
 export function isoToDisplay(iso?: string): string {
   if (!iso) return "";
@@ -93,38 +85,23 @@ export default function UploadView() {
     [byService]
   );
 
-  // // ⬇️ detalles que irán al backend (según horario seleccionado)
-  // const detallesParser: ParserDetalle[] = useMemo(
-  //   () => toParserDetalles(byService[selected] ?? []),
-  //   [byService, selected]
-  // );
+   useEffect(() => {
+    function onPdfExtracted(e: any) {
+      const { text, file } = e.detail || {};
+      if (text && file) {
+        handleExtracted(text, file);
+      }
+    }
+    window.addEventListener("pdf:extracted", onPdfExtracted as EventListener);
+    return () => window.removeEventListener("pdf:extracted", onPdfExtracted as EventListener);
+  }, []);
 
   return (
     <div className="flex flex-col lg:flex-row gap-6 items-stretch w-full">
-      {/* Izquierda: Dock con uploader → se minimiza a burbuja */}
-      <UploadDock defaultExpanded onExtracted={handleExtracted} />
-
-      {/* Botón Guardar */}
-      {/* <div className="mt-4">
-          {file && detallesParser.length > 0 && fechaISO && (
-            <GuardarListaButton
-              file={file}
-              fechaISO={fechaISO}
-              detallesParser={detallesParser}
-              onSaved={() => {
-                alert("✅ Guardado");
-                // opcional: limpiar o navegar a la vista de lista
-              }}
-            />
-          )}
-        </div> */}
-
       {/* Derecha: área principal centrada y con animación sutil */}
       <div className="w-full">
         <div className="mx-auto max-w-3xl transition-all duration-300 motion-safe:animate-[fadein_200ms_ease-out]">
           {/* Fecha editable: solo visible si ya hay archivo */}
-          
-
           {/* Selector de servicio */}
           <div className="mb-4 flex justify-center">
           <ServicePicker

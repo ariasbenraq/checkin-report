@@ -5,7 +5,7 @@ import UploadBubble from "./UploadBubble";
 import PdfUploader from "./PdfUploader";
 
 export default function UploadDock({
-  defaultExpanded = true,
+  defaultExpanded = false,
   onExtracted,
   className = "",
 }: {
@@ -38,6 +38,8 @@ export default function UploadDock({
           onExpand={() => setExpanded(true)}
           fileName={fileName}
           busy={busy}
+          navHeight={64}
+          compact         // 👈 inicia como burbuja compacta
         />
       )}
 
@@ -46,7 +48,7 @@ export default function UploadDock({
         {expanded && (
           <motion.aside
             key="uploader-panel"
-            className={`w-full lg:w-[28rem] ${className}`}
+            className={`w-full md:w-[20rem] ${className}`}
             initial={{ opacity: 0, x: -12 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -12 }}

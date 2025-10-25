@@ -106,19 +106,6 @@ export function ServicePicker({
 								>
 									{SERVICE_LABEL[key].replace(/^Domingo\s/, "")}
 								</span>
-								{/* contador */}
-								{/* {showCounts && typeof counts?.[key] === "number" && (
-									<span
-										className={[
-											"ml-1 inline-flex items-center justify-center rounded-full min-w-5 h-5 text-[11px] px-1 border",
-											selected ? "bg-white text-indigo-700 border-white" : "bg-gray-100 text-gray-700 border-gray-300",
-										].join(" ")}
-										aria-label={`Total registros ${counts?.[key]}`}
-										title={`Total: ${counts?.[key]}`}
-									>
-										{counts?.[key]}
-									</span>
-								)} */}
 							</label>
 						);
 					})}
