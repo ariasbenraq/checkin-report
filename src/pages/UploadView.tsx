@@ -98,14 +98,6 @@ export default function UploadView() {
     [byService, selected]
   );
 
-  const copyToClipboard = () => {
-    const header = `Área\tTotal voluntarios\t${LATE_LABEL[selected]}`;
-    const rows = data.map(d => `${d.area}\t${d.total}\t${d.lateCount}`);
-    navigator.clipboard.writeText([header, ...rows].join("\n"))
-      .then(() => alert("📋 Tabla copiada al portapapeles"))
-      .catch(() => alert("❌ Error al copiar"));
-  };
-
   return (
     <div className="flex flex-col lg:flex-row gap-6 items-stretch w-full">
       {/* Izquierda: uploader */}
@@ -128,7 +120,7 @@ export default function UploadView() {
           />
         </div>
         {/* Botón Guardar */}
-        <div className="mt-4">
+        {/* <div className="mt-4">
           {file && detallesParser.length > 0 && fechaISO && (
             <GuardarListaButton
               file={file}
@@ -140,7 +132,7 @@ export default function UploadView() {
               }}
             />
           )}
-        </div>
+        </div> */}
       </div>
 
       {/* Derecha: selector + tabla + botones */}
@@ -156,13 +148,6 @@ export default function UploadView() {
               {SERVICE_LABEL[key]}
             </button>
           ))}
-          <button
-            onClick={copyToClipboard}
-            className="inline-flex items-center gap-2 rounded-md bg-yellow-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-yellow-600"
-          >
-            <span className="material-symbols-outlined text-base">content_copy</span>
-            Copiar tabla
-          </button>
         </div>
 
         {message && <div className="text-center text-red-600 font-semibold">{message}</div>}
@@ -172,6 +157,10 @@ export default function UploadView() {
           sortOrder={sortOrder}
           onToggleSort={onToggleSort}
           lateLabel={LATE_LABEL[selected]}
+          sourceFile={file}
+          fechaISO={fechaISO}
+          toParserDetalles={toParserDetalles}
+          onSaved={() => alert("✅ Guardado")}
         />
       </div>
     </div>
