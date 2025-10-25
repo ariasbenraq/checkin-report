@@ -1,8 +1,10 @@
 import type { AreaResumen } from "../features/checkins/types/resumen";
 import { useMemo, useEffect, useRef, useState } from "react";
 import { IconButton } from "../components/ui";
-import { GuardarListaButton } from "../features/checkins/GuardarListaButton";
 import type { ParserDetalle } from "../features/checkins/buildPayload";
+import SaveListModal from "../components/SaveListModal";
+import { buildPayload } from "../features/checkins/buildPayload";
+import { postLista } from "../api/client";
 
 
 
@@ -20,6 +22,7 @@ interface TableResumenProps {
   fechaISO?: string;
   toParserDetalles?: (rows: AreaResumen[]) => ParserDetalle[];
   onSaved?: () => void; // opcional, para callback al terminar
+  onFechaChange?: (iso: string) => void; // 👈 nuevo
 }
 
 const nf = new Intl.NumberFormat("es-PE");
@@ -40,7 +43,11 @@ const TableResumen = ({
   fechaISO,
   toParserDetalles,
   onSaved,
+  onFechaChange,
 }: TableResumenProps) => {
+  const [openSave, setOpenSave] = useState(false);
+  const [defaultName, setDefaultName] = useState<string>("");
+
   const [editMode, setEditMode] = useState(false);
   const [rows, setRows] = useState<AreaResumen[]>(data ?? []);
   const [showExcluded, setShowExcluded] = useState(false);
@@ -52,9 +59,20 @@ const TableResumen = ({
   // Sincroniza con data si no estás editando
   useEffect(() => {
 
-    setRows(data ?? []);
+    if (!editMode) {
+      setRows(data ?? []);
+    }
 
-  }, [data]);
+  }, [data, editMode]);
+
+  // nombre por defecto del modal: puedes basarte en file.name o en fecha + servicio
+  useEffect(() => {
+    if (sourceFile?.name) {
+      setDefaultName(sourceFile.name);
+    } else if (fechaISO) {
+      setDefaultName(`Lista ${fechaISO}`);
+    }
+  }, [sourceFile, fechaISO]);
 
   // Filas visibles según showExcluded
   const visibleRows = useMemo(() => {
@@ -83,6 +101,36 @@ const TableResumen = ({
 
   // ⬇️ condición del botón Guardar
   const canSave = Boolean(sourceFile && fechaISO && toParserDetalles && includedRows.length > 0);
+
+  async function handleConfirmSave({ nombre, clave }: { nombre: string; clave: string }) {
+    if (!sourceFile || !fechaISO || !toParserDetalles) return;
+    try {
+      // 1) mapear detalles desde las filas incluidas (orden + exclusiones)
+      const detalles = toParserDetalles(includedRows);
+      // 2) construir payload con nombre override
+      const payload = await buildPayload(
+        sourceFile,
+        fechaISO,
+        detalles,
+        "procesado",
+        nombre // 👈 overrideName
+      );
+      // 3) POST con header X-Save-Key
+      await postLista(payload, { saveKey: clave });
+      setOpenSave(false);
+      setEditMode(false);
+      onSaved?.();
+    } catch (e: any) {
+      alert(e?.message || "Error al guardar");
+    }
+  }
+
+  function openSaveModal() {
+    // puedes forzar commit visual si quieres:
+    // handleCommit(); // opcional
+    setOpenSave(true);
+  }
+
 
 
   function handleDragStart(ev: React.DragEvent<HTMLTableRowElement>) {
@@ -175,12 +223,46 @@ const TableResumen = ({
 
   const totalExcluded = excluded.size;
 
+  const isoToDisplay = (iso?: string) => {
+    if (!iso) return "";
+    const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!m) return "";
+    const [, y, mm, d] = m;
+    return `${d}-${mm}-${y}`;
+  };
+  const displayToIso = (display: string) => {
+    const m = display.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+    if (!m) return "";
+    const [, d, mm, y] = m;
+    return `${y}-${mm}-${d}`;
+  };
+
+
   return (
     <div className="max-w-4xl mx-auto rounded-xl shadow-lg overflow-hidden">
       {/* Barra de acciones */}
       <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 bg-white/70 border-b">
         <div className="flex items-center gap-2">
           <h3 className="font-semibold">Resumen por área</h3>
+          {/* Fecha compacta junto al título */}
+          {onFechaChange && (
+            <label className="text-sm flex items-center gap-2 bg-white/80 border border-black/10 rounded-full pl-2 pr-3 py-1">
+              <span className="material-symbols-outlined text-gray-600 text-base">calendar_month</span>
+              <input
+                aria-label="Fecha (DD-MM-YYYY)"
+                placeholder="DD-MM-YYYY"
+                value={isoToDisplay(fechaISO)}
+                onChange={(e) => {
+                  const iso = displayToIso(e.target.value);
+                  if (iso) onFechaChange(iso); // solo actualiza cuando el formato es válido
+                }}
+                inputMode="numeric"
+                pattern="\d{2}-\d{2}-\d{4}"
+                title="Usa el formato DD-MM-YYYY"
+                className="bg-transparent outline-none text-gray-800 w-[9.5rem]"
+              />
+            </label>
+          )}
           {editMode && totalExcluded > 0 && (
             <span className="text-xs rounded-full px-2 py-0.5 bg-amber-100 text-amber-800">
               Excluidas: {totalExcluded}
@@ -192,26 +274,15 @@ const TableResumen = ({
 
           {/* Guardar (solo si hay PDF + fecha + mapeador + filas incluidas) */}
           {canSave && (
-            <GuardarListaButton
-              file={sourceFile as File}
-              fechaISO={fechaISO as string}
-              detallesParser={toParserDetalles!(includedRows)}
-              onSaved={() => {
-                setEditMode(false);
-                onSaved?.();
-              }}
-            >
-              <IconButton
-                onlyIcon
-                label="Guardar lista en el servidor"
-                title="Guardar lista en el servidor"
-                icon="database_upload"
-                variant="primary"
-              />
-            </GuardarListaButton>
+            <IconButton
+              onClick={openSaveModal}
+              onlyIcon
+              label="Guardar lista en el servidor"
+              title="Guardar lista (elige nombre y clave)"
+              icon="database_upload"
+              variant="primary"
+            />
           )}
-
-
           <IconButton
             onClick={handleCopyTable}
             onlyIcon
@@ -229,8 +300,6 @@ const TableResumen = ({
             icon={sortOrder === "asc" ? "arrow_upward" : "arrow_downward"}
             variant="outline"
           />
-
-
           {editMode && (
             <IconButton
               onClick={() => setShowExcluded((v) => !v)}
@@ -241,7 +310,6 @@ const TableResumen = ({
               variant="outline"
             />
           )}
-
           {!editMode ? (
             <IconButton
               onClick={toggleEdit}
@@ -301,7 +369,7 @@ const TableResumen = ({
                 </td>
               </tr>
             ) : (
-              visibleRows.map((item, visIdx) => {
+              visibleRows.map((item) => {
                 // visIdx es índice en visibleRows; necesitamos índice real en rows para DnD
                 const realIdx = rows.indexOf(item);
                 const k = keyOf(item, realIdx);
@@ -360,6 +428,15 @@ const TableResumen = ({
           )}
         </table>
       </div>
+      {/* Modal de guardado */}
+      <SaveListModal
+        open={openSave}
+        defaultName={defaultName}
+        onClose={() => setOpenSave(false)}
+        onConfirm={(data) => {
+          void handleConfirmSave(data);
+        }}
+      />
     </div>
   );
 };

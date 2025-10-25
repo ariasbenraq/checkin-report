@@ -5,6 +5,7 @@ import { parsePdfTextAllServices } from '../utils/pdfParser';
 import type { AreaResumen } from '../features/checkins/types/resumen';
 import type { ServiceKey } from '../features/checkins/constants';
 import { SERVICE_LABEL, LATE_LABEL } from '../features/checkins/constants';
+import { ServicePicker } from "../components/ServicePicker";
 
 export default function CargarPdfPage() {
   const [byService, setByService] = useState<Record<ServiceKey, AreaResumen[]>>({
@@ -30,20 +31,16 @@ export default function CargarPdfPage() {
   const data = byService[selected] ?? [];
   const lateLabel = LATE_LABEL[selected];
 
+  const counts = {
+    SUN_8A: byService.SUN_8A?.length ?? 0,
+    SUN_10A: byService.SUN_10A?.length ?? 0,
+    SUN_12P: byService.SUN_12P?.length ?? 0,
+  };
+
   return (
     <div className="space-y-4">
       {/* --- Selector de horario --- */}
-      <div className="flex gap-2">
-        {(['SUN_8A','SUN_10A','SUN_12P'] as ServiceKey[]).map(key => (
-          <button
-            key={key}
-            onClick={() => setSelected(key)}
-            className={`px-3 py-2 rounded-md border ${selected === key ? 'bg-indigo-600 text-white' : 'bg-white'}`}
-          >
-            {SERVICE_LABEL[key]}
-          </button>
-        ))}
-      </div>
+      <ServicePicker value={selected} onChange={setSelected} counts={counts} />
 
       {/* --- Tu dropzone/botón para cargar PDF --- */}
       {/* reemplaza onChange según tu uploader */}

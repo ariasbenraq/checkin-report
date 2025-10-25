@@ -6,9 +6,11 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.j
 
 interface PdfUploaderProps {
   onExtracted: (text: string, file: File) => void;
+  onBusyChange?: (busy: boolean) => void;
+  onFileSelected?: (name: string | null) => void;
 }
 
-const PdfUploader = ({ onExtracted }: PdfUploaderProps) => {
+const PdfUploader = ({ onExtracted, onBusyChange, onFileSelected }: PdfUploaderProps) => {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -27,6 +29,7 @@ const PdfUploader = ({ onExtracted }: PdfUploaderProps) => {
   const handleReadPDF = async () => {
     if (!file) return;
     setLoading(true);
+    onBusyChange?.(true);
 
     const reader = new FileReader();
     reader.onload = async () => {
@@ -67,10 +70,14 @@ const PdfUploader = ({ onExtracted }: PdfUploaderProps) => {
         <input
           id="file-upload"
           type="file"
-          accept=".pdf"
+          accept=".pdf,application/pdf"
           ref={fileInputRef}
           className="hidden"
-          onChange={(e) => setFile(e.target.files?.[0] || null)}
+          onChange={(e) => {
+            const f = e.target.files?.[0] || null;
+            setFile(f);
+            onFileSelected?.(f?.name || null);
+          }}
         />
       </label>
 
