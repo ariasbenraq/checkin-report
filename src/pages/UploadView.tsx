@@ -42,14 +42,6 @@ export function isoToDisplay(iso?: string): string {
   return `${d}-${mm}-${y}`;
 }
 
-function displayToIso(display: string): string {
-  const m = display.match(/^(\d{2})-(\d{2})-(\d{4})$/);
-  if (!m) return ""; // inválido → puedes decidir no actualizar el estado
-  const [, d, mm, y] = m;
-  return `${y}-${mm}-${d}`;
-}
-
-
 export default function UploadView() {
   const [byService, setByService] = useState<Record<ServiceKey, AreaResumen[]>>({
     SUN_8A: [], SUN_10A: [], SUN_12P: []
