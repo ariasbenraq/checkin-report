@@ -3,6 +3,7 @@ import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import UploadBubble from "./UploadBubble";
 import PdfUploader from "./PdfUploader";
+import clsx from "clsx";
 
 export default function UploadDock({
   defaultExpanded = false,
@@ -48,7 +49,11 @@ export default function UploadDock({
         {expanded && (
           <motion.aside
             key="uploader-panel"
-            className={`w-full md:w-[20rem] ${className}`}
+            className={clsx(
+              // tamaños por defecto (puedes dejarlos mínimos)
+              "max-w-full",
+              className // 👈 lo que pasas desde App manda
+            )}
             initial={{ opacity: 0, x: -12 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -12 }}

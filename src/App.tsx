@@ -43,7 +43,7 @@ export default function App() {
       {currentView === "upload" && (
         <UploadDock
           defaultExpanded={false}
-          className="fixed top-[72px] left-4 z-40"
+          className="fixed top-[72px] left-4 z-40 w-[20rem]"
           onExtracted={(text, file) => {
             window.dispatchEvent(
               new CustomEvent("pdf:extracted", { detail: { text, file } })
