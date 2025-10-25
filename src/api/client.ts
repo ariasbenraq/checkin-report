@@ -46,8 +46,13 @@ async function fetchWithAuth(pathOrAbsUrl: string, options: RequestInit = {}) {
 
 // ==== API ====
 
-export function postLista(payload: any) {
-  return fetchWithAuth('/listas', { method: 'POST', body: JSON.stringify(payload) });
+export function postLista(payload: any, opts?: { saveKey?: string }) {
+  const headers = opts?.saveKey ? { 'X-Save-Key': opts.saveKey } : undefined;
+  return fetchWithAuth('/listas', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+    headers,
+  });
 }
 export function getListas(params?: Record<string, string>) {
   const qs = params ? `?${new URLSearchParams(params).toString()}` : '';

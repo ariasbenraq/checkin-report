@@ -5,6 +5,9 @@ import UploadView from "./pages/UploadView";
 import Home from "./pages/Home";
 import ListView from "./pages/ListView";
 import AuthLanding from "./pages/AuthLanding";
+import { AnimatePresence } from "framer-motion";
+import PageFade from "./components/PageFade";
+import UploadDock from "./components/UploadDock"; // 👈 tu dock con burbuja
 
 function getToken() {
   return localStorage.getItem("accessToken");
@@ -37,17 +40,34 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gray-100">
       <Navbar current={currentView} onNavigate={setCurrentView} />
+      {currentView === "upload" && (
+        <UploadDock
+          defaultExpanded={false}
+          className="fixed top-[72px] left-4 z-40 w-[20rem]"
+          onExtracted={(text, file) => {
+            window.dispatchEvent(
+              new CustomEvent("pdf:extracted", { detail: { text, file } })
+            );
+          }}
+        />
+      )}
       <main className="max-w-6xl mx-auto p-6">
-        {currentView === "home" && <Home />}
-        {currentView === "upload" && (
-          <>
-            <h1 className="text-2xl font-bold text-center mb-6">
-              Resumen Inventario Etiquetas
-            </h1>
-            <UploadView />
-          </>
-        )}
-        {currentView === "list" && <ListView />}
+        <AnimatePresence mode="wait">
+          <div key={currentView}>
+            <PageFade>
+              {currentView === "home" && <Home />}
+              {currentView === "upload" && (
+                <>
+                  <h1 className="text-2xl font-bold text-center mb-6">
+                    Resumen Inventario Etiquetas
+                  </h1>
+                  <UploadView />
+                </>
+              )}
+              {currentView === "list" && <ListView />}
+            </PageFade>
+          </div>
+        </AnimatePresence>
       </main>
     </div>
   );
