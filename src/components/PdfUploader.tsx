@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import * as pdfjsLib from "pdfjs-dist";
 import "pdfjs-dist/build/pdf.worker.entry";
 
@@ -51,6 +51,19 @@ const PdfUploader = ({ onExtracted, onBusyChange, onFileSelected }: PdfUploaderP
 
     reader.readAsArrayBuffer(file);
   };
+
+  useEffect(() => {
+  const loadDemoPDF = async () => {
+    const pdfUrl = '/src/assets/test-analisis.pdf';
+    const response = await fetch(pdfUrl);
+    const blob = await response.blob();
+    const demoFile = new File([blob], 'test-analisis.pdf', { type: 'application/pdf' });
+    
+    setFile(demoFile);
+    onFileSelected?.('test-analisis.pdf');
+  };
+  loadDemoPDF();
+}, []);
 
   return (
     <div className="w-full max-w-md mx-auto p-6 bg-white rounded-xl shadow-md space-y-4 transition-all duration-300">

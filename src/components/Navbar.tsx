@@ -32,7 +32,7 @@ export default function Navbar({ current, onNavigate }: NavbarProps) {
               {/* IZQUIERDA: brand + nav */}
               <div className="flex items-center">
                 <div className="flex-shrink-0 text-white font-bold text-lg">
-                  logistica CDV
+                  Contabilidad de Voluntarios
                 </div>
                 <div className="hidden sm:block sm:ml-6">
                   <div className="flex space-x-4">

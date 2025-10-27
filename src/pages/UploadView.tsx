@@ -3,26 +3,25 @@ import { useEffect, useMemo, useState } from "react";
 import TableResumen from "../components/TableResumen";
 import type { AreaResumen } from "../features/checkins/types/resumen";
 import { parsePdfTextAllServices } from "../utils/pdfParser";
-import {  LATE_LABEL, type ServiceKey } from "../features/checkins/constants";
+import { LATE_LABEL, type ServiceKey } from "../features/checkins/constants";
 import { ServicePicker } from "../components/ServicePicker";
-
-// ⬇️ imports para guardar
 import type { ParserDetalle } from "../features/checkins/buildPayload";
+import { DEMO, DEMO_PDF_URL, DEMO_PDF_NAME } from "../config/demo";
+
 
 
 function extractFechaFromName(name: string): string {
   // busca YYYY-MM-DD en el nombre del archivo; si no, hoy
   const m = name.match(/\d{4}-\d{2}-\d{2}/);
-  return m ? m[0] : new Date().toISOString().slice(0, 10); UploadView
+  return m ? m[0] : new Date().toISOString().slice(0, 10);
 }
 
 // mapea AreaResumen[] -> ParserDetalle[]
 function toParserDetalles(rows: AreaResumen[]): ParserDetalle[] {
   return rows.map((r) => ({
     area: r.area,
-    total_voluntarios: r.total,      // 👈 ajusta si tu tipo usa otro nombre
-    post_vios: r.lateCount,          // 👈 idem (en tu tabla es la col tardíos)
-    // observaciones?: (si tuvieses)
+    total_voluntarios: r.total,
+    post_vios: r.lateCount,
   }));
 }
 
@@ -42,13 +41,11 @@ export default function UploadView() {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [message, setMessage] = useState<string | null>(null);
 
-  // ⬇️ nuevo: file y fecha para el payload
   const [file, setFile] = useState<File | null>(null);
   const [fechaISO, setFechaISO] = useState<string>("");
 
   const onToggleSort = () => setSortOrder(s => (s === "asc" ? "desc" : "asc"));
 
-  // Recibe TEXTO + FILE desde PdfUploader (¡cambiamos la firma!)
   const handleExtracted = (fullText: string, f: File) => {
     setFile(f);
     setFechaISO(extractFechaFromName(f.name));
@@ -64,7 +61,6 @@ export default function UploadView() {
     setMessage(any ? null : "No se encontraron voluntarios en los horarios.");
   };
 
-  // datos para la tabla (ordenados)
   const data = useMemo(() => {
     const arr = byService[selected] ?? [];
     const copy = [...arr];
@@ -85,40 +81,47 @@ export default function UploadView() {
     [byService]
   );
 
-   useEffect(() => {
+  useEffect(() => {
     function onPdfExtracted(e: any) {
       const { text, file } = e.detail || {};
-      if (text && file) {
-        handleExtracted(text, file);
-      }
+      if (text && file) handleExtracted(text, file);
     }
     window.addEventListener("pdf:extracted", onPdfExtracted as EventListener);
     return () => window.removeEventListener("pdf:extracted", onPdfExtracted as EventListener);
   }, []);
 
+  // ⬇️ DEMO: precarga de “PDF” (texto extraído) al montar
+  useEffect(() => {
+    if (!DEMO || !DEMO_PDF_URL) return;
+
+    (async () => {
+      try {
+        const resp = await fetch(DEMO_PDF_URL);
+        const text = await resp.text();
+        // Creamos un File con mimetype de PDF y un nombre con fecha:
+        const fauxFile = new File([text], DEMO_PDF_NAME, { type: 'application/pdf' });
+        handleExtracted(text, fauxFile);
+      } catch (e) {
+        console.warn('No se pudo precargar demo PDF:', e);
+        setMessage('No se pudo precargar el archivo demo.');
+      }
+    })();
+  }, []);
+
   return (
     <div className="flex flex-col lg:flex-row gap-6 items-stretch w-full">
-      {/* Derecha: área principal centrada y con animación sutil */}
       <div className="w-full">
         <div className="mx-auto max-w-3xl transition-all duration-300 motion-safe:animate-[fadein_200ms_ease-out]">
-          {/* Fecha editable: solo visible si ya hay archivo */}
-          {/* Selector de servicio */}
           <div className="mb-4 flex justify-center">
-          <ServicePicker
-            value={selected}
-            onChange={setSelected}
-            counts={counts}
-            className="justify-center"
-          />
+            <ServicePicker
+              value={selected}
+              onChange={setSelected}
+              counts={counts}
+              className="justify-center"
+            />
           </div>
 
-          {message && (
-            <div className="text-center text-rose-600 font-semibold mt-2">
-              {message}
-            </div>
-          )}
-
-          {message && <div className="text-center text-red-600 font-semibold">{message}</div>}
+          {message && <div className="text-center text-rose-600 font-semibold mt-2">{message}</div>}
 
           <TableResumen
             data={data}
@@ -127,7 +130,7 @@ export default function UploadView() {
             lateLabel={LATE_LABEL[selected]}
             sourceFile={file}
             fechaISO={fechaISO}
-            onFechaChange={setFechaISO} 
+            onFechaChange={setFechaISO}
             toParserDetalles={toParserDetalles}
             onSaved={() => alert("✅ Guardado")}
           />

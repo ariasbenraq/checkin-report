@@ -59,7 +59,7 @@ export default function App() {
               {currentView === "upload" && (
                 <>
                   <h1 className="text-2xl font-bold text-center mb-6">
-                    Resumen Inventario Etiquetas
+                    Resumen de Carga de Voluntarios
                   </h1>
                   <UploadView />
                 </>
