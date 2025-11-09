@@ -5,6 +5,9 @@ import type { ParserDetalle } from "../features/checkins/buildPayload";
 import SaveListModal from "../components/SaveListModal";
 import { buildPayload } from "../features/checkins/buildPayload";
 import { postLista } from "../api/client";
+// + NUEVO import:
+import { applyTextFormat, type TextFormat, cycleFormat, FORMAT_LABEL } from "../utils/textFormatter";
+
 
 
 
@@ -55,6 +58,12 @@ const TableResumen = ({
 
   const dragIndexRef = useRef<number | null>(null);
   const overIndexRef = useRef<number | null>(null);
+
+  // dentro del componente
+  const [areaFormat, setAreaFormat] = useState<TextFormat>('capitalize');
+
+
+
 
   // Sincroniza con data si no estás editando
   useEffect(() => {
@@ -200,12 +209,13 @@ const TableResumen = ({
     // Construir TSV: Área \t Total \t Llegaron después del umbral
     const tsv = bodyRows
       .map((r) => {
-        const area = (r.area ?? "").toString().trim();
+        const area = applyTextFormat((r.area ?? "").toString().trim(), areaFormat); // <-- NUEVO
         const total = String(r.total ?? 0);
         const late = String(r.lateCount ?? 0);
         return [area, total, late].join("\t");
       })
       .join("\n");
+
 
     // Copiar al portapapeles (con fallback)
     try {
@@ -284,6 +294,14 @@ const TableResumen = ({
             />
           )}
           <IconButton
+            onClick={() => setAreaFormat((f) => cycleFormat(f))}
+            onlyIcon
+            label={`Formato área: ${FORMAT_LABEL[areaFormat]}`}
+            title={`Cambiar formato: ${FORMAT_LABEL[areaFormat]}`}
+            icon="text_fields"          // usa el que tengas disponible (ej. 'text_fields' / 'title')
+            variant="outline"
+          />
+          <IconButton
             onClick={handleCopyTable}
             onlyIcon
             label="Copiar cuerpo de la tabla"
@@ -355,7 +373,7 @@ const TableResumen = ({
             <tr>
               <th className="w-10 px-2 py-2 text-left">{editMode ? "⋮⋮" : ""}</th>
               {editMode && <th className="w-10 px-2 py-2 text-left">•</th>}
-              <th className="px-4 py-2 text-left whitespace-nowrap select-none">Área</th>
+              <th className="px-4 py-2 text-left whitespace-nowrap select-none">{applyTextFormat("Área", areaFormat)}</th>
               <th className="px-4 py-2 text-center whitespace-nowrap">Total voluntarios</th>
               <th className="px-4 py-2 text-center whitespace-nowrap">{lateLabel}</th>
             </tr>
@@ -363,7 +381,7 @@ const TableResumen = ({
 
           <tbody className="bg-white">
             {(!visibleRows || visibleRows.length === 0) ? (
-              <tr>
+              <tr>tsv
                 <td colSpan={editMode ? 5 : 4} className="px-4 py-8 text-center text-gray-500">
                   No hay datos para mostrar.
                 </td>
@@ -404,7 +422,7 @@ const TableResumen = ({
                       </td>
                     )}
 
-                    <td className="px-4 py-2">{item.area}</td>
+                    <td className="px-4 py-2">{applyTextFormat(item.area ?? '', areaFormat)}</td>
                     <td className="px-4 py-2 text-center">{nf.format(item.total)}</td>
                     <td className="px-4 py-2 text-center">{nf.format(item.lateCount)}</td>
                   </tr>
