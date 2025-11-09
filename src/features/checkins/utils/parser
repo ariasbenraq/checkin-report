@@ -10,8 +10,8 @@ export function clean(str: string): string {
 }
 
 const AREA_PATTERNS: Record<string, string> = {
-  "Voluntarios CDV > Alabanzas >": "Alabanza",
-//   "Voluntarios CDV > Alabanzas > Asistente de equipo": "Asistente de equipo",
+  // "Voluntarios CDV > Alabanzas >": "Alabanza",
+  //   "Voluntarios CDV > Alabanzas > Asistente de equipo": "Asistente de equipo",
   "Voluntarios CDV > Producción Lince > Atmósfera": "Atmósfera",
   "Voluntarios CDV > CDV LINCE > Velover": "Velover",
   "Voluntarios CDV > CDV LINCE > Equipo Bienvenida": "Bienvenida",
@@ -22,13 +22,13 @@ const AREA_PATTERNS: Record<string, string> = {
   "Voluntarios CDV > Eventos > Desayuno": "Desayuno",
   "Voluntarios CDV > Voluntario ED": "ED",
   "Voluntarios CDV > CDV LINCE > Equipo Médico": "Equipo Médico",
-//   "Voluntarios CDV > CDV LINCE > Fin de semana inolvidable": "Fin de semana Inolvidable",
+  //   "Voluntarios CDV > CDV LINCE > Fin de semana inolvidable": "Fin de semana Inolvidable",
   "Voluntarios CDV > Eventos > Registro": "Registro",
   "Voluntarios CDV > CDV LINCE > Hombres CDV": "Hombres CDV",
   "Voluntarios CDV > CDV LINCE > Informes": "Informes",
-//   "Kids > Bebes - Lince": "Kids",
-//   "Kids > Infantes - Lince": "Kids",
-//   "Kids > Primaria - Lince": "Kids",
+  //   "Kids > Bebes - Lince": "Kids",
+  //   "Kids > Infantes - Lince": "Kids",
+  //   "Kids > Primaria - Lince": "Kids",
   "Voluntarios CDV > Kids Voluntarios": "Kids",
   "Voluntarios CDV > Eventos > Logística": "Logística",
   "Voluntarios CDV > Producción Lince > Luces": "Luces",
@@ -42,7 +42,7 @@ const AREA_PATTERNS: Record<string, string> = {
   "Voluntarios CDV > CDV LINCE > Servolución": "Servolución",
   "Voluntarios CDV > Producción Lince > Sonido": "Sonido",
   "Voluntarios CDV > Producción Lince > Voluntario": "Staff Pastoral",
-//   "Voluntarios CDV > Equipo ministerial > Líder de Servicio": "Líder de Servicio",
+  //   "Voluntarios CDV > Equipo ministerial > Líder de Servicio": "Líder de Servicio",
   "Voluntarios CDV > Equipo ministerial > IDL": "IDL",
   "Voluntarios CDV > Producción Lince > Visuales": "Visuales",
   "Voluntarios CDV > Comunicaciones > Comms": "Comms",
@@ -59,7 +59,7 @@ export function parsePdfText(text: string): AreaResumen[] {
 
   for (const section of groupedSections) {
     if (!/^8:00a\b/i.test(section.trimStart())) continue;
-// ⛔ Solo queremos 8:00am
+    // ⛔ Solo queremos 8:00am
 
     // 🔹 Ahora procesamos solo ese bloque
     const sections = section.split(/(?=(Voluntarios CDV > |Kids > ))/g);

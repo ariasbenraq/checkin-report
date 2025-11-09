@@ -381,7 +381,7 @@ const TableResumen = ({
 
           <tbody className="bg-white">
             {(!visibleRows || visibleRows.length === 0) ? (
-              <tr>tsv
+              <tr>
                 <td colSpan={editMode ? 5 : 4} className="px-4 py-8 text-center text-gray-500">
                   No hay datos para mostrar.
                 </td>
