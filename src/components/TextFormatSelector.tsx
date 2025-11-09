@@ -1,5 +1,4 @@
 // src/components/TextFormatSelector.tsx
-import React from 'react';
 import { type TextFormat, FORMAT_LABEL, cycleFormat } from '../utils/textFormatter';
 
 type Props = {
