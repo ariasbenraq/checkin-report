@@ -56,13 +56,16 @@ export default function Navbar({ current, onNavigate }: NavbarProps) {
 
               {/* DERECHA: usuario + cerrar sesión (desktop) */}
               <div className="hidden sm:flex items-center gap-3">
-                <span className="text-gray-300 text-sm">Hola, <strong className="text-white">{username}</strong></span>
+                <span className="text-gray-300 text-sm">
+                  Hola, <strong className="text-white">{username}</strong>
+                </span>
+
                 <button
                   onClick={() => signOut()}
-                  className="px-3 py-2 rounded-md text-sm font-medium bg-red-600 text-white hover:bg-red-700"
+                  className="px-3 py-2 text-gray-300 rounded-md hover:bg-gray-700 hover:text-white"
                   title="Cerrar sesión y cambiar de usuario"
                 >
-                  Cerrar sesión
+                  <span className="material-symbols-outlined text-xl">logout</span>
                 </button>
               </div>
 
