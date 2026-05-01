@@ -1,5 +1,6 @@
 // src/App.tsx
 import { useEffect, useState } from "react";
+import type { Session } from "@supabase/supabase-js";
 import Navbar from "./components/Navbar";
 import UploadView from "./pages/UploadView";
 import Home from "./pages/Home";
@@ -7,36 +8,52 @@ import ListView from "./pages/ListView";
 import AuthLanding from "./pages/AuthLanding";
 import { AnimatePresence } from "framer-motion";
 import PageFade from "./components/PageFade";
-import UploadDock from "./components/UploadDock"; // 👈 tu dock con burbuja
-
-function getToken() {
-  return localStorage.getItem("accessToken");
-}
+import UploadDock from "./components/UploadDock";
+import { supabase } from "./lib/supabase";
+import { getSession } from "./utils/auth";
 
 export default function App() {
   const [currentView, setCurrentView] = useState<"home" | "upload" | "list">("upload");
-  const [token, setToken] = useState<string | null>(() => getToken());
+  const [session, setSession] = useState<Session | null>(null);
+  const [loadingSession, setLoadingSession] = useState(true);
 
-  // Escucha cambios de token (por si se hace logout en otra pestaña o lo setea AuthLanding)
   useEffect(() => {
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === "accessToken") setToken(getToken());
+    let mounted = true;
+
+    getSession()
+      .then((currentSession) => {
+        if (!mounted) return;
+        setSession(currentSession);
+      })
+      .finally(() => {
+        if (mounted) setLoadingSession(false);
+      });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      setSession(nextSession);
+      setLoadingSession(false);
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
     };
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
   }, []);
 
-  // Pequeña forma de “refrescar” el token cuando volvemos de AuthLanding
-  useEffect(() => {
-    setToken(getToken());
-  }, []);
+  if (loadingSession) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-100">
+        <div className="text-sm text-gray-600">Validando sesión...</div>
+      </div>
+    );
+  }
 
-  // Si NO hay token, mostramos la pantalla de Auth
-  if (!token) {
+  if (!session) {
     return <AuthLanding />;
   }
 
-  // Si hay token, mostramos la app normal
   return (
     <div className="min-h-screen bg-gray-100">
       <Navbar current={currentView} onNavigate={setCurrentView} />

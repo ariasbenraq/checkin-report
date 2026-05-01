@@ -1,8 +1,9 @@
 // src/components/Navbar.tsx
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/react';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
-import { getToken, getUsernameFromToken, signOut } from '../utils/auth';
-
+import { useEffect, useState } from 'react';
+import type { User } from '@supabase/supabase-js';
+import { getCurrentUser, getDisplayName, signOut } from '../utils/auth';
 
 interface NavbarProps {
   current: 'home' | 'upload' | 'list';
@@ -20,8 +21,13 @@ function classNames(...classes: string[]) {
 }
 
 export default function Navbar({ current, onNavigate }: NavbarProps) {
-  const token = getToken();
-  const username = getUsernameFromToken(token || '') || 'Usuario';
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    void getCurrentUser().then(setUser).catch(() => setUser(null));
+  }, []);
+
+  const username = getDisplayName(user);
 
   return (
     <Disclosure as="nav" className="bg-gray-800">
@@ -58,7 +64,7 @@ export default function Navbar({ current, onNavigate }: NavbarProps) {
               <div className="hidden sm:flex items-center gap-3">
                 <span className="text-gray-300 text-sm">Hola, <strong className="text-white">{username}</strong></span>
                 <button
-                  onClick={() => signOut()}
+                  onClick={() => void signOut()}
                   className="px-3 py-2 rounded-md text-sm font-medium bg-red-600 text-white hover:bg-red-700"
                   title="Cerrar sesión y cambiar de usuario"
                 >
@@ -106,7 +112,7 @@ export default function Navbar({ current, onNavigate }: NavbarProps) {
                 Sesión: <span className="text-white font-semibold">{username}</span>
               </div>
               <button
-                onClick={() => signOut()}
+                onClick={() => void signOut()}
                 className="mt-0 px-3 py-2 rounded-md text-sm font-medium bg-red-600 text-white hover:bg-red-700"
               >
                 Cerrar sesión
