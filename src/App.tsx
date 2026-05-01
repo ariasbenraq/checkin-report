@@ -4,7 +4,6 @@ import type { Session } from "@supabase/supabase-js";
 import Navbar from "./components/Navbar";
 import UploadView from "./pages/UploadView";
 import Home from "./pages/Home";
-import ListView from "./pages/ListView";
 import AuthLanding from "./pages/AuthLanding";
 import { AnimatePresence } from "framer-motion";
 import PageFade from "./components/PageFade";
@@ -13,7 +12,7 @@ import { supabase } from "./lib/supabase";
 import { getSession } from "./utils/auth";
 
 export default function App() {
-  const [currentView, setCurrentView] = useState<"home" | "upload" | "list">("upload");
+  const [currentView, setCurrentView] = useState<"home" | "upload">("upload");
   const [session, setSession] = useState<Session | null>(null);
   const [loadingSession, setLoadingSession] = useState(true);
 
@@ -81,7 +80,6 @@ export default function App() {
                   <UploadView />
                 </>
               )}
-              {currentView === "list" && <ListView />}
             </PageFade>
           </div>
         </AnimatePresence>

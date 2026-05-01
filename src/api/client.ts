@@ -49,10 +49,3 @@ export function postLista(payload: any, opts?: { saveKey?: string }) {
     headers,
   });
 }
-export function getListas(params?: Record<string, string>) {
-  const qs = params ? `?${new URLSearchParams(params).toString()}` : "";
-  return fetchWithAuth(`/listas${qs}`);
-}
-export function deleteLista(id: number) {
-  return fetchWithAuth(`/listas/${id}`, { method: "DELETE" });
-}

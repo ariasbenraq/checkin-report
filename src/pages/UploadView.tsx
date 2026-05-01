@@ -26,14 +26,6 @@ function toParserDetalles(rows: AreaResumen[]): ParserDetalle[] {
   }));
 }
 
-export function isoToDisplay(iso?: string): string {
-  if (!iso) return "";
-  const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if (!m) return "";
-  const [, y, mm, d] = m;
-  return `${d}-${mm}-${y}`;
-}
-
 export default function UploadView() {
   const [byService, setByService] = useState<Record<ServiceKey, AreaResumen[]>>({
     SUN_8A: [], SUN_10A: [], SUN_12P: []
