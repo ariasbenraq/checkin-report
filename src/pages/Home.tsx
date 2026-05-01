@@ -22,9 +22,9 @@ export default function Home() {
               <li><strong>Agrupar por:</strong> <em>Grouped by Time</em>.</li>
               <li>Verifica que el PDF muestre:
                 <div className="mt-1 rounded bg-gray-100 p-2 text-sm">
-                  Grouped by Time: Sunday 8:00a<br/>
-                  Grouped by Time: Sunday 10:00a<br/>
-                  Grouped by Time: Sunday 12:00p
+                  Verano: Sunday 8:00a / 10:00a / 12:00p<br/>
+                  Invierno: Sunday 9:00a / 11:00a / 1:00p<br/>
+                  Grouped by Time: Sunday 6:00p
                 </div>
               </li>
               <li>Incluye a <strong>Voluntarios</strong> (y áreas).</li>
@@ -42,7 +42,8 @@ export default function Home() {
         <ol className="list-decimal pl-6 space-y-2 text-gray-700">
           <li>Ve a <strong>Cargar PDF</strong>.</li>
           <li>Arrastra o selecciona el archivo y pulsa <strong>Procesar PDF</strong>.</li>
-          <li>Cambia entre horarios con los botones <strong>8:00a / 10:00a / 12:00p</strong>.</li>
+          <li>Elige <strong>Horario de verano</strong> o <strong>Horario de invierno</strong> antes de revisar los servicios.</li>
+          <li>Cambia entre servicios con los botones <strong>1er / 2do / 3er servicio / NochesCDV</strong>.</li>
         </ol>
       </section>
 
@@ -52,8 +53,12 @@ export default function Home() {
           <li><strong>Total voluntarios:</strong> personas listadas en esa <em>área</em> para el servicio seleccionado.</li>
           <li><strong>Llegaron después del umbral:</strong> compara la hora de llegada con:
             <div className="mt-1 rounded bg-gray-100 p-2 text-sm">
-              8:00a → &gt; 7:00am &nbsp;|&nbsp; 10:00a → &gt; 9:30am &nbsp;|&nbsp; 12:00p → &gt; 11:30am
-            </div>
+                Verano: 8:00a → &gt; 7:00am &nbsp;|&nbsp; 10:00a → &gt; 9:30am &nbsp;|&nbsp; 12:00p → &gt; 11:30am
+                <br />
+                Invierno: 9:00a → &gt; 8:30am &nbsp;|&nbsp; 11:00a → &gt; 10:30am &nbsp;|&nbsp; 1:00p → &gt; 12:30pm
+                <br />
+                NochesCDV → &gt; 5:30pm
+              </div>
           </li>
         </ul>
       </section>
@@ -63,6 +68,7 @@ export default function Home() {
         <ul className="list-disc pl-6 space-y-1 text-gray-700">
           <li><strong>Copiar tabla</strong>: copia los datos al portapapeles.</li>
           <li><strong>Exportar Excel</strong>: descarga un .xlsx con los datos del horario actual.</li>
+          <li><strong>NochesCDV</strong>: por ahora se puede procesar y exportar, pero no guardar en backend.</li>
         </ul>
       </section>
 

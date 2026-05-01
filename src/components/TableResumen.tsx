@@ -26,6 +26,7 @@ interface TableResumenProps {
   toParserDetalles?: (rows: AreaResumen[]) => ParserDetalle[];
   onSaved?: () => void; // opcional, para callback al terminar
   onFechaChange?: (iso: string) => void; // 👈 nuevo
+  disableSave?: boolean;
 }
 
 const nf = new Intl.NumberFormat("es-PE");
@@ -47,6 +48,7 @@ const TableResumen = ({
   toParserDetalles,
   onSaved,
   onFechaChange,
+  disableSave = false,
 }: TableResumenProps) => {
   const [openSave, setOpenSave] = useState(false);
   const [defaultName, setDefaultName] = useState<string>("");
@@ -109,7 +111,7 @@ const TableResumen = ({
   );
 
   // ⬇️ condición del botón Guardar
-  const canSave = Boolean(sourceFile && fechaISO && toParserDetalles && includedRows.length > 0);
+  const canSave = Boolean(sourceFile && fechaISO && toParserDetalles && includedRows.length > 0 && !disableSave);
 
   async function handleConfirmSave({ nombre, clave }: { nombre: string; clave: string }) {
     if (!sourceFile || !fechaISO || !toParserDetalles) return;

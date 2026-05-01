@@ -1,19 +1,24 @@
 // src/components/ServicePicker.tsx
 import * as React from "react";
-import type { ServiceKey } from "../features/checkins/constants";
-import { SERVICE_LABEL } from "../features/checkins/constants";
+import {
+	type ScheduleMode,
+	type ServiceKey,
+	getServiceLabel,
+} from "../features/checkins/constants";
 
 type Counts = Partial<Record<ServiceKey, number>>;
 
 export function ServicePicker({
 	value,
 	onChange,
+	scheduleMode,
 	counts,
 	className = "",
 	showCounts = true,
 }: {
 	value: ServiceKey;
 	onChange: (next: ServiceKey) => void;
+	scheduleMode: ScheduleMode;
 	counts?: Counts;          // ej: { SUN_8A: 12, SUN_10A: 9, SUN_12P: 0 }
 	className?: string;
 	showCounts?: boolean;
@@ -22,6 +27,7 @@ export function ServicePicker({
 		{ key: "SUN_8A", short: "1er Servicio" },
 		{ key: "SUN_10A", short: "2do Servicio" },
 		{ key: "SUN_12P", short: "3er Servicio" },
+		{ key: "SUN_7P", short: "NochesCDV" },
 	];
 
 	const getDisabled = (k: ServiceKey) =>
@@ -58,7 +64,7 @@ export function ServicePicker({
 				>
 					{options.map(({ key, short }) => (
 						<option key={key} value={key} disabled={getDisabled(key)}>
-							{short} — {SERVICE_LABEL[key]}
+							{short} — {getServiceLabel(key, scheduleMode)}
 							{showCounts && typeof counts?.[key] === "number" ? ` (${counts?.[key]})` : ""}
 						</option>
 					))}
@@ -102,9 +108,9 @@ export function ServicePicker({
 										"inline-flex items-center rounded-full px-2 py-0.5 text-[11px] border",
 										selected ? "border-white/50" : "border-gray-300 text-gray-600",
 									].join(" ")}
-									title={SERVICE_LABEL[key]}
+									title={getServiceLabel(key, scheduleMode)}
 								>
-									{SERVICE_LABEL[key].replace(/^Domingo\s/, "")}
+									{getServiceLabel(key, scheduleMode).replace(/^Domingo\s/, "")}
 								</span>
 							</label>
 						);

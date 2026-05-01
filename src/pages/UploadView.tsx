@@ -3,7 +3,12 @@ import { useEffect, useMemo, useState } from "react";
 import TableResumen from "../components/TableResumen";
 import type { AreaResumen } from "../features/checkins/types/resumen";
 import { parsePdfTextAllServices } from "../utils/pdfParser";
-import {  LATE_LABEL, type ServiceKey } from "../features/checkins/constants";
+import {
+  getLateLabel,
+  SCHEDULE_LABEL,
+  type ScheduleMode,
+  type ServiceKey,
+} from "../features/checkins/constants";
 import { ServicePicker } from "../components/ServicePicker";
 
 // ⬇️ imports para guardar
@@ -26,17 +31,23 @@ function toParserDetalles(rows: AreaResumen[]): ParserDetalle[] {
   }));
 }
 
+function getVolunteerCount(rows: AreaResumen[]): number {
+  return rows.reduce((acc, row) => acc + Number(row.total ?? 0), 0);
+}
+
 export default function UploadView() {
   const [byService, setByService] = useState<Record<ServiceKey, AreaResumen[]>>({
-    SUN_8A: [], SUN_10A: [], SUN_12P: []
+    SUN_8A: [], SUN_10A: [], SUN_12P: [], SUN_7P: []
   });
   const [selected, setSelected] = useState<ServiceKey>("SUN_8A");
+  const [scheduleMode, setScheduleMode] = useState<ScheduleMode>("winter");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [message, setMessage] = useState<string | null>(null);
 
   // ⬇️ nuevo: file y fecha para el payload
   const [file, setFile] = useState<File | null>(null);
   const [fechaISO, setFechaISO] = useState<string>("");
+  const [extractedText, setExtractedText] = useState<string>("");
 
   const onToggleSort = () => setSortOrder(s => (s === "asc" ? "desc" : "asc"));
 
@@ -44,17 +55,28 @@ export default function UploadView() {
   const handleExtracted = (fullText: string, f: File) => {
     setFile(f);
     setFechaISO(extractFechaFromName(f.name));
+    setExtractedText(fullText);
+  };
 
-    const all = parsePdfTextAllServices(fullText);
+  useEffect(() => {
+    if (!extractedText) return;
+
+    const all = parsePdfTextAllServices(extractedText, scheduleMode);
     setByService(all);
 
-    if (all.SUN_8A.length) setSelected("SUN_8A");
-    else if (all.SUN_10A.length) setSelected("SUN_10A");
-    else if (all.SUN_12P.length) setSelected("SUN_12P");
+    if (getVolunteerCount(all.SUN_8A) > 0) setSelected("SUN_8A");
+    else if (getVolunteerCount(all.SUN_10A) > 0) setSelected("SUN_10A");
+    else if (getVolunteerCount(all.SUN_12P) > 0) setSelected("SUN_12P");
+    else if (getVolunteerCount(all.SUN_7P) > 0) setSelected("SUN_7P");
 
-    const any = all.SUN_8A.length + all.SUN_10A.length + all.SUN_12P.length > 0;
+    const any =
+      getVolunteerCount(all.SUN_8A) +
+      getVolunteerCount(all.SUN_10A) +
+      getVolunteerCount(all.SUN_12P) +
+      getVolunteerCount(all.SUN_7P) > 0;
+
     setMessage(any ? null : "No se encontraron voluntarios en los horarios.");
-  };
+  }, [extractedText, scheduleMode]);
 
   // datos para la tabla (ordenados)
   const data = useMemo(() => {
@@ -70,9 +92,10 @@ export default function UploadView() {
 
   const counts = useMemo(
     () => ({
-      SUN_8A: byService.SUN_8A?.length ?? 0,
-      SUN_10A: byService.SUN_10A?.length ?? 0,
-      SUN_12P: byService.SUN_12P?.length ?? 0,
+      SUN_8A: getVolunteerCount(byService.SUN_8A ?? []),
+      SUN_10A: getVolunteerCount(byService.SUN_10A ?? []),
+      SUN_12P: getVolunteerCount(byService.SUN_12P ?? []),
+      SUN_7P: getVolunteerCount(byService.SUN_7P ?? []),
     }),
     [byService]
   );
@@ -96,9 +119,31 @@ export default function UploadView() {
           {/* Fecha editable: solo visible si ya hay archivo */}
           {/* Selector de servicio */}
           <div className="mb-4 flex justify-center">
+            <div className="inline-flex rounded-lg border bg-white shadow-sm overflow-hidden">
+              {(["summer", "winter"] as ScheduleMode[]).map((mode, index) => {
+                const active = scheduleMode === mode;
+                return (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => setScheduleMode(mode)}
+                    className={[
+                      "px-4 py-2 text-sm font-medium",
+                      index > 0 ? "border-l" : "",
+                      active ? "bg-indigo-600 text-white" : "bg-white text-gray-700 hover:bg-gray-50",
+                    ].join(" ")}
+                  >
+                    {SCHEDULE_LABEL[mode]}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <div className="mb-4 flex justify-center">
           <ServicePicker
             value={selected}
             onChange={setSelected}
+            scheduleMode={scheduleMode}
             counts={counts}
             className="justify-center"
           />
@@ -116,12 +161,13 @@ export default function UploadView() {
             data={data}
             sortOrder={sortOrder}
             onToggleSort={onToggleSort}
-            lateLabel={LATE_LABEL[selected]}
+            lateLabel={getLateLabel(selected, scheduleMode)}
             sourceFile={file}
             fechaISO={fechaISO}
             onFechaChange={setFechaISO} 
             toParserDetalles={toParserDetalles}
             onSaved={() => alert("✅ Guardado")}
+            disableSave={selected === "SUN_7P"}
           />
         </div>
       </div>

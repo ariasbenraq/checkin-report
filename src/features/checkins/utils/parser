@@ -58,8 +58,8 @@ export function parsePdfText(text: string): AreaResumen[] {
   const groupedSections = text.split(/Grouped by Time:\s*Sunday\s*/i);
 
   for (const section of groupedSections) {
-    if (!/^8:00a\b/i.test(section.trimStart())) continue;
-    // ⛔ Solo queremos 8:00am
+    if (!/^9:00a\b/i.test(section.trimStart())) continue;
+    // ⬇️ Utilidad legacy: solo procesa el 1er servicio actual
 
     // 🔹 Ahora procesamos solo ese bloque
     const sections = section.split(/(?=(Voluntarios CDV > |Kids > ))/g);
@@ -87,7 +87,7 @@ export function parsePdfText(text: string): AreaResumen[] {
         if (ampm === "pm") hour24 += 12;
 
         const arrivalMinutes = hour24 * 60 + minute;
-        const isLate = arrivalMinutes > 420; // 7:00am en minutos
+        const isLate = arrivalMinutes > 510; // 8:30am en minutos
 
         areaBlocks[area].total += 1;
         if (isLate) areaBlocks[area].lateCount += 1;
@@ -101,4 +101,3 @@ export function parsePdfText(text: string): AreaResumen[] {
     lateCount: stats.lateCount,
   }));
 }
-

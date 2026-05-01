@@ -1,7 +1,7 @@
 // src/utils/pdfParser.ts
 import { ALL_AREAS } from '../domain/areas';
 import type { AreaResumen } from "../features/checkins/types/resumen";
-import type { ServiceKey } from "../features/checkins/constants";
+import type { ScheduleMode, ServiceKey } from "../features/checkins/constants";
 
 // ---------- helpers ----------
 function clean(str: string): string {
@@ -61,26 +61,61 @@ interface ServiceTimeConfig {
 }
 const t = (h: number, m: number, ap: 'a' | 'p') => ((h % 12) + (ap === 'p' ? 12 : 0)) * 60 + m;
 
-const SERVICE_TIMES: ServiceTimeConfig[] = [
-    {
-        key: 'SUN_8A',
-        heading: 'Sunday 8:00a',
-        total: { fromMinutes: null, toMinutes: t(8, 0, 'a') }, // <= 8:00a
-        afterViosMinutes: t(7, 0, 'a'), // > 7:30a
-    },
-    {
-        key: 'SUN_10A',
-        heading: 'Sunday 10:00a',
-        total: { fromMinutes: t(9, 0, 'a'), toMinutes: t(10, 0, 'a') }, // 9:00a–10:00a
-        afterViosMinutes: t(9, 30, 'a'), // > 9:30a
-    },
-    {
-        key: 'SUN_12P',
-        heading: 'Sunday 12:00p',
-        total: { fromMinutes: t(11, 0, 'a'), toMinutes: t(12, 0, 'p') }, // 11:00a–12:00p
-        afterViosMinutes: t(11, 30, 'a'), // > 11:30a
-    },
-];
+function getServiceTimes(scheduleMode: ScheduleMode): ServiceTimeConfig[] {
+    return scheduleMode === 'summer'
+        ? [
+            {
+                key: 'SUN_8A',
+                heading: 'Sunday 8:00a',
+                total: { fromMinutes: t(7, 0, 'a'), toMinutes: t(8, 0, 'a') },
+                afterViosMinutes: t(7, 0, 'a'),
+            },
+            {
+                key: 'SUN_10A',
+                heading: 'Sunday 10:00a',
+                total: { fromMinutes: t(9, 30, 'a'), toMinutes: t(10, 0, 'a') },
+                afterViosMinutes: t(9, 30, 'a'),
+            },
+            {
+                key: 'SUN_12P',
+                heading: 'Sunday 12:00p',
+                total: { fromMinutes: t(11, 30, 'a'), toMinutes: t(12, 0, 'p') },
+                afterViosMinutes: t(11, 30, 'a'),
+            },
+            {
+                key: 'SUN_7P',
+                heading: 'Sunday 6:00p',
+                total: { fromMinutes: t(5, 30, 'p'), toMinutes: t(6, 0, 'p') },
+                afterViosMinutes: t(5, 30, 'p'),
+            },
+        ]
+        : [
+            {
+                key: 'SUN_8A',
+                heading: 'Sunday 9:00a',
+                total: { fromMinutes: t(8, 30, 'a'), toMinutes: t(9, 0, 'a') },
+                afterViosMinutes: t(8, 30, 'a'),
+            },
+            {
+                key: 'SUN_10A',
+                heading: 'Sunday 11:00a',
+                total: { fromMinutes: t(10, 30, 'a'), toMinutes: t(11, 0, 'a') },
+                afterViosMinutes: t(10, 30, 'a'),
+            },
+            {
+                key: 'SUN_12P',
+                heading: 'Sunday 1:00p',
+                total: { fromMinutes: t(12, 30, 'p'), toMinutes: t(1, 0, 'p') },
+                afterViosMinutes: t(12, 30, 'p'),
+            },
+            {
+                key: 'SUN_7P',
+                heading: 'Sunday 6:00p',
+                total: { fromMinutes: t(5, 30, 'p'), toMinutes: t(6, 0, 'p') },
+                afterViosMinutes: t(5, 30, 'p'),
+            },
+        ];
+}
 
 // const isInTotal = (min: number, cfg: ServiceTimeConfig) =>
 //     cfg.total.fromMinutes === null ? min <= cfg.total.toMinutes
@@ -109,20 +144,23 @@ function splitByServiceSections(text: string): { heading: string; body: string }
     return out;
 }
 
-function resolveServiceByHeading(fullHeadingLine: string): ServiceTimeConfig | null {
+function resolveServiceByHeading(fullHeadingLine: string, scheduleMode: ScheduleMode): ServiceTimeConfig | null {
     const m = /Grouped by Time:\s*(.+)$/i.exec(fullHeadingLine.trim());
     if (!m) return null;
     const head = m[1].trim().toLowerCase();
-    return SERVICE_TIMES.find(s => s.heading.toLowerCase() === head) ?? null;
+    return getServiceTimes(scheduleMode).find(s => s.heading.toLowerCase() === head) ?? null;
 }
 
 // ---------- API principal: devuelve 3 arreglos ----------
-export function parsePdfTextAllServices(text: string): Record<ServiceKey, AreaResumen[]> {
+export function parsePdfTextAllServices(
+    text: string,
+    scheduleMode: ScheduleMode = 'winter'
+): Record<ServiceKey, AreaResumen[]> {
     const sections = splitByServiceSections(text);
 
     // acumulador por servicio y por área
     const acc: Record<ServiceKey, Record<string, { total: number; lateCount: number }>> = {
-        SUN_8A: {}, SUN_10A: {}, SUN_12P: {}
+        SUN_8A: {}, SUN_10A: {}, SUN_12P: {}, SUN_7P: {}
     };
 
     (Object.keys(acc) as ServiceKey[]).forEach((svc) => {
@@ -135,7 +173,7 @@ export function parsePdfTextAllServices(text: string): Record<ServiceKey, AreaRe
     const timeRegex = /(\d{1,2})(?::(\d{2}))?\s*(a|am|p|pm)\b/gi;
 
     for (const sec of sections) {
-        const cfg = resolveServiceByHeading(sec.heading);
+        const cfg = resolveServiceByHeading(sec.heading, scheduleMode);
         if (!cfg) continue; // sección no configurada -> se ignora
 
         // Divide el cuerpo por bloques de área (tu lógica)
@@ -195,6 +233,6 @@ export function parsePdfTextAllServices(text: string): Record<ServiceKey, AreaRe
         SUN_8A: toResumen(acc.SUN_8A),
         SUN_10A: toResumen(acc.SUN_10A),
         SUN_12P: toResumen(acc.SUN_12P),
+        SUN_7P: toResumen(acc.SUN_7P),
     };
 }
-
