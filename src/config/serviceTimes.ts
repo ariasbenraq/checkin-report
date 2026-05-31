@@ -1,5 +1,5 @@
 // src/config/serviceTimes.ts
-export type ServiceKey = 'SUN_8A' | 'SUN_10A' | 'SUN_12P' | 'SUN_7P';
+export type ServiceKey = 'SUN_8A' | 'SUN_10A' | 'SUN_12P' | 'SUN_7P' | 'SUN_8P';
 
 export interface ServiceTimeConfig {
   key: ServiceKey;
@@ -35,5 +35,11 @@ export const SERVICE_TIMES: ServiceTimeConfig[] = [
     heading: 'Sunday 6:00p',
     totalWindow: { from: '5:30p', to: '6:00p' },
     afterViosThreshold: '5:30p',
+  },
+  {
+    key: 'SUN_8P',
+    heading: 'Sunday 8:00p',
+    totalWindow: { from: '7:30p', to: '8:00p' },
+    afterViosThreshold: '7:55p',
   },
 ];

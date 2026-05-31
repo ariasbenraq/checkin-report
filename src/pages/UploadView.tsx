@@ -38,7 +38,7 @@ function getVolunteerCount(rows: AreaResumen[]): number {
 
 export default function UploadView() {
   const [byService, setByService] = useState<Record<ServiceKey, AreaResumen[]>>({
-    SUN_8A: [], SUN_10A: [], SUN_12P: [], SUN_7P: []
+    SUN_8A: [], SUN_10A: [], SUN_12P: [], SUN_7P: [], SUN_8P: []
   });
   const [selected, setSelected] = useState<ServiceKey>("SUN_8A");
   const [scheduleMode, setScheduleMode] = useState<ScheduleMode>("winter");
@@ -69,12 +69,14 @@ export default function UploadView() {
     else if (getVolunteerCount(all.SUN_10A) > 0) setSelected("SUN_10A");
     else if (getVolunteerCount(all.SUN_12P) > 0) setSelected("SUN_12P");
     else if (getVolunteerCount(all.SUN_7P) > 0) setSelected("SUN_7P");
+    else if (getVolunteerCount(all.SUN_8P) > 0) setSelected("SUN_8P");
 
     const any =
       getVolunteerCount(all.SUN_8A) +
       getVolunteerCount(all.SUN_10A) +
       getVolunteerCount(all.SUN_12P) +
-      getVolunteerCount(all.SUN_7P) > 0;
+      getVolunteerCount(all.SUN_7P) +
+      getVolunteerCount(all.SUN_8P) > 0;
 
     setMessage(any ? null : "No se encontraron voluntarios en los horarios.");
   }, [extractedText, scheduleMode]);
@@ -101,6 +103,7 @@ export default function UploadView() {
       SUN_10A: getVolunteerCount(byService.SUN_10A ?? []),
       SUN_12P: getVolunteerCount(byService.SUN_12P ?? []),
       SUN_7P: getVolunteerCount(byService.SUN_7P ?? []),
+      SUN_8P: getVolunteerCount(byService.SUN_8P ?? []),
     }),
     [byService]
   );

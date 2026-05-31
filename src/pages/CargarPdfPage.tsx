@@ -10,7 +10,7 @@ import { ServicePicker } from "../components/ServicePicker";
 export default function CargarPdfPage() {
   const scheduleMode: ScheduleMode = 'winter';
   const [byService, setByService] = useState<Record<ServiceKey, AreaResumen[]>>({
-    SUN_8A: [], SUN_10A: [], SUN_12P: [], SUN_7P: []
+    SUN_8A: [], SUN_10A: [], SUN_12P: [], SUN_7P: [], SUN_8P: []
   });
   const [selected, setSelected] = useState<ServiceKey>('SUN_8A');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
@@ -28,6 +28,7 @@ export default function CargarPdfPage() {
     else if (all.SUN_10A.length) setSelected('SUN_10A');
     else if (all.SUN_12P.length) setSelected('SUN_12P');
     else if (all.SUN_7P.length) setSelected('SUN_7P');
+    else if (all.SUN_8P.length) setSelected('SUN_8P');
   }
 
   const data = byService[selected] ?? [];
@@ -41,6 +42,7 @@ export default function CargarPdfPage() {
     SUN_10A: byService.SUN_10A?.length ?? 0,
     SUN_12P: byService.SUN_12P?.length ?? 0,
     SUN_7P: byService.SUN_7P?.length ?? 0,
+    SUN_8P: byService.SUN_8P?.length ?? 0,
   };
 
   return (

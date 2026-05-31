@@ -28,6 +28,7 @@ export function ServicePicker({
 		{ key: "SUN_10A", short: "2do Servicio" },
 		{ key: "SUN_12P", short: "3er Servicio" },
 		{ key: "SUN_7P", short: "NochesCDV" },
+		{ key: "SUN_8P", short: "Punto" },
 	];
 
 	const getDisabled = (k: ServiceKey) =>

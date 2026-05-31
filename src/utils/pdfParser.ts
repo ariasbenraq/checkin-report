@@ -88,6 +88,12 @@ function getServiceTimes(scheduleMode: ScheduleMode): ServiceTimeConfig[] {
                 total: { fromMinutes: t(5, 30, 'p'), toMinutes: t(6, 0, 'p') },
                 afterViosMinutes: t(5, 30, 'p'),
             },
+            {
+                key: 'SUN_8P',
+                heading: 'Sunday 8:00p',
+                total: { fromMinutes: t(7, 30, 'p'), toMinutes: t(8, 0, 'p') },
+                afterViosMinutes: t(7, 55, 'p'),
+            },
         ]
         : [
             {
@@ -113,6 +119,12 @@ function getServiceTimes(scheduleMode: ScheduleMode): ServiceTimeConfig[] {
                 heading: 'Sunday 6:00p',
                 total: { fromMinutes: t(5, 30, 'p'), toMinutes: t(6, 0, 'p') },
                 afterViosMinutes: t(5, 30, 'p'),
+            },
+            {
+                key: 'SUN_8P',
+                heading: 'Sunday 8:00p',
+                total: { fromMinutes: t(7, 30, 'p'), toMinutes: t(8, 0, 'p') },
+                afterViosMinutes: t(7, 55, 'p'),
             },
         ];
 }
@@ -160,7 +172,7 @@ export function parsePdfTextAllServices(
 
     // acumulador por servicio y por área
     const acc: Record<ServiceKey, Record<string, { total: number; lateCount: number }>> = {
-        SUN_8A: {}, SUN_10A: {}, SUN_12P: {}, SUN_7P: {}
+        SUN_8A: {}, SUN_10A: {}, SUN_12P: {}, SUN_7P: {}, SUN_8P: {}
     };
 
     (Object.keys(acc) as ServiceKey[]).forEach((svc) => {
@@ -234,5 +246,6 @@ export function parsePdfTextAllServices(
         SUN_10A: toResumen(acc.SUN_10A),
         SUN_12P: toResumen(acc.SUN_12P),
         SUN_7P: toResumen(acc.SUN_7P),
+        SUN_8P: toResumen(acc.SUN_8P),
     };
 }
