@@ -43,3 +43,14 @@ export function getServiceLabel(service: ServiceKey, scheduleMode: ScheduleMode)
 export function getLateLabel(service: ServiceKey, scheduleMode: ScheduleMode): string {
   return LATE_LABELS[scheduleMode][service];
 }
+
+const SERVICE_NAMES: Record<ServiceKey, string> = {
+  SUN_8A: '1er. Servicio',
+  SUN_10A: '2do. Servicio',
+  SUN_12P: '3er. Servicio',
+  SUN_7P: 'Noche CDV',
+};
+
+export function getServiceName(service: ServiceKey): string {
+  return SERVICE_NAMES[service];
+}

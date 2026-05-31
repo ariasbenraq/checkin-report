@@ -5,6 +5,7 @@ import type { AreaResumen } from "../features/checkins/types/resumen";
 import { parsePdfTextAllServices } from "../utils/pdfParser";
 import {
   getLateLabel,
+  getServiceName,
   SCHEDULE_LABEL,
   type ScheduleMode,
   type ServiceKey,
@@ -77,6 +78,10 @@ export default function UploadView() {
 
     setMessage(any ? null : "No se encontraron voluntarios en los horarios.");
   }, [extractedText, scheduleMode]);
+
+  const today = new Date();
+  const fechaDisplay = `${String(today.getDate()).padStart(2, '0')}-${String(today.getMonth() + 1).padStart(2, '0')}-${today.getFullYear()}`;
+  const servicio = getServiceName(selected);
 
   // datos para la tabla (ordenados)
   const data = useMemo(() => {
@@ -168,6 +173,8 @@ export default function UploadView() {
             toParserDetalles={toParserDetalles}
             onSaved={() => alert("✅ Guardado")}
             disableSave={selected === "SUN_7P"}
+            fecha={fechaDisplay}
+            servicio={servicio}
           />
         </div>
       </div>

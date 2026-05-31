@@ -16,6 +16,8 @@ interface TableResumenProps {
   sortOrder: "asc" | "desc";
   onToggleSort: () => void;
   lateLabel?: string;
+  fecha?: string;
+  servicio?: string;
   showTotalsRow?: boolean;
   onReorder?: (next: AreaResumen[]) => void;
   /** Se invoca al confirmar edición con el nuevo orden (solo incluidos) y la lista de excluidos */
@@ -42,13 +44,14 @@ const TableResumen = ({
   showTotalsRow = true,
   onReorder,
   onCommit,
-  // ⬇️ NUEVO
   sourceFile,
   fechaISO,
   toParserDetalles,
   onSaved,
   onFechaChange,
   disableSave = false,
+  fecha = '',
+  servicio = '',
 }: TableResumenProps) => {
   const [openSave, setOpenSave] = useState(false);
   const [defaultName, setDefaultName] = useState<string>("");
@@ -375,6 +378,8 @@ const TableResumen = ({
             <tr>
               <th className="w-10 px-2 py-2 text-left">{editMode ? "⋮⋮" : ""}</th>
               {editMode && <th className="w-10 px-2 py-2 text-left">•</th>}
+              <th className="px-4 py-2 text-center whitespace-nowrap">Fecha</th>
+              <th className="px-4 py-2 text-center whitespace-nowrap">Servicio</th>
               <th className="px-4 py-2 text-left whitespace-nowrap select-none">{applyTextFormat("Área", areaFormat)}</th>
               <th className="px-4 py-2 text-center whitespace-nowrap">Total voluntarios</th>
               <th className="px-4 py-2 text-center whitespace-nowrap">{lateLabel}</th>
@@ -384,7 +389,7 @@ const TableResumen = ({
           <tbody className="bg-white">
             {(!visibleRows || visibleRows.length === 0) ? (
               <tr>
-                <td colSpan={editMode ? 5 : 4} className="px-4 py-8 text-center text-gray-500">
+                <td colSpan={editMode ? 7 : 6} className="px-4 py-8 text-center text-gray-500">
                   No hay datos para mostrar.
                 </td>
               </tr>
@@ -424,6 +429,8 @@ const TableResumen = ({
                       </td>
                     )}
 
+                    <td className="px-4 py-2 text-center whitespace-nowrap">{fecha}</td>
+                    <td className="px-4 py-2 text-center whitespace-nowrap">{servicio}</td>
                     <td className="px-4 py-2">{applyTextFormat(item.area ?? '', areaFormat)}</td>
                     <td className="px-4 py-2 text-center">{nf.format(item.total)}</td>
                     <td className="px-4 py-2 text-center">{nf.format(item.lateCount)}</td>
@@ -438,6 +445,8 @@ const TableResumen = ({
               <tr className="border-t font-semibold">
                 <td className="px-2 py-2" />
                 {editMode && <td className="px-2 py-2" />}
+                <td className="px-4 py-2 text-center">{fecha}</td>
+                <td className="px-4 py-2 text-center">{servicio}</td>
                 <td className="px-4 py-2 text-right">
                   Totales{totalExcluded > 0 ? ` (excluidas: ${totalExcluded})` : ""}:
                 </td>

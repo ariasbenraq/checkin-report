@@ -5,6 +5,7 @@ import Navbar from "./components/Navbar";
 import UploadView from "./pages/UploadView";
 import Home from "./pages/Home";
 import AuthLanding from "./pages/AuthLanding";
+import PlanningCenterView from "./pages/PlanningCenterView";
 import { AnimatePresence } from "framer-motion";
 import PageFade from "./components/PageFade";
 import UploadDock from "./components/UploadDock";
@@ -12,7 +13,7 @@ import { supabase } from "./lib/supabase";
 import { getSession } from "./utils/auth";
 
 export default function App() {
-  const [currentView, setCurrentView] = useState<"home" | "upload">("upload");
+  const [currentView, setCurrentView] = useState<"home" | "upload" | "planning-center">("upload");
   const [session, setSession] = useState<Session | null>(null);
   const [loadingSession, setLoadingSession] = useState(true);
 
@@ -80,6 +81,7 @@ export default function App() {
                   <UploadView />
                 </>
               )}
+              {currentView === "planning-center" && <PlanningCenterView />}
             </PageFade>
           </div>
         </AnimatePresence>

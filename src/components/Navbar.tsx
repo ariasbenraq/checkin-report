@@ -6,13 +6,14 @@ import type { User } from '@supabase/supabase-js';
 import { getCurrentUser, getDisplayName, signOut } from '../utils/auth';
 
 interface NavbarProps {
-  current: 'home' | 'upload';
-  onNavigate: (view: 'home' | 'upload') => void;
+  current: 'home' | 'upload' | 'planning-center';
+  onNavigate: (view: 'home' | 'upload' | 'planning-center') => void;
 }
 
 const navigation = [
   { name: 'Instrucciones', key: 'home' },
   { name: 'Cargar PDF', key: 'upload' },
+  { name: 'Planning Center', key: 'planning-center' },
 ];
 
 function classNames(...classes: string[]) {

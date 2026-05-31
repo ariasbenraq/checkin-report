@@ -4,7 +4,7 @@ import TableResumen from '../components/TableResumen';
 import { parsePdfTextAllServices } from '../utils/pdfParser';
 import type { AreaResumen } from '../features/checkins/types/resumen';
 import type { ScheduleMode, ServiceKey } from '../features/checkins/constants';
-import { getLateLabel, getServiceLabel } from '../features/checkins/constants';
+import { getLateLabel, getServiceLabel, getServiceName } from '../features/checkins/constants';
 import { ServicePicker } from "../components/ServicePicker";
 
 export default function CargarPdfPage() {
@@ -32,6 +32,9 @@ export default function CargarPdfPage() {
 
   const data = byService[selected] ?? [];
   const lateLabel = getLateLabel(selected, scheduleMode);
+  const today = new Date();
+  const fecha = `${String(today.getDate()).padStart(2, '0')}-${String(today.getMonth() + 1).padStart(2, '0')}-${today.getFullYear()}`;
+  const servicio = getServiceName(selected);
 
   const counts = {
     SUN_8A: byService.SUN_8A?.length ?? 0,
@@ -60,7 +63,9 @@ export default function CargarPdfPage() {
           data={[...data].sort((a,b)=> selectedSort(a,b,sortOrder))}
           sortOrder={sortOrder}
           onToggleSort={onToggleSort}
-          lateLabel={lateLabel} // <- etiqueta dinámica
+          lateLabel={lateLabel}
+          fecha={fecha}
+          servicio={servicio}
         />
       ) : (
         <p className="text-sm text-gray-600">
