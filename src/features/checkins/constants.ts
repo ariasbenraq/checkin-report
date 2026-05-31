@@ -23,16 +23,16 @@ const SERVICE_LABELS: Record<ScheduleMode, Record<ServiceKey, string>> = {
 
 const LATE_LABELS: Record<ScheduleMode, Record<ServiceKey, string>> = {
   summer: {
-    SUN_8A: 'Llegaron después de 7:00am',
-    SUN_10A: 'Llegaron después de 9:30am',
-    SUN_12P: 'Llegaron después de 11:30am',
-    SUN_7P: 'Llegaron después de 5:30pm',
+    SUN_8A: 'Llegaron después de 08:55am',
+    SUN_10A: 'Llegaron después de 10:55am',
+    SUN_12P: 'Llegaron después de 12:55pm',
+    SUN_7P: 'Llegaron después de 5:55pm',
   },
   winter: {
-    SUN_8A: 'Llegaron después de 8:30am',
-    SUN_10A: 'Llegaron después de 10:30am',
-    SUN_12P: 'Llegaron después de 12:30pm',
-    SUN_7P: 'Llegaron después de 5:30pm',
+    SUN_8A: 'Llegaron después de 08:55am',
+    SUN_10A: 'Llegaron después de 10:55am',
+    SUN_12P: 'Llegaron después de 12:55pm',
+    SUN_7P: 'Llegaron después de 5:55pm',
   },
 };
 
