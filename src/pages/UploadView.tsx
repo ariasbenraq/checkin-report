@@ -32,13 +32,13 @@ function toParserDetalles(rows: AreaResumen[]): ParserDetalle[] {
   }));
 }
 
-function getVolunteerCount(rows: AreaResumen[]): number {
-  return rows.reduce((acc, row) => acc + Number(row.total ?? 0), 0);
+function getVolunteerCount(rows: AreaResumen[] | undefined): number {
+  return (rows ?? []).reduce((acc, row) => acc + Number(row.total ?? 0), 0);
 }
 
 export default function UploadView() {
   const [byService, setByService] = useState<Record<ServiceKey, AreaResumen[]>>({
-    SUN_8A: [], SUN_10A: [], SUN_12P: [], SUN_7P: [], SUN_8P: []
+    SUN_8A: [], SUN_10A: [], SUN_12P: [], SUN_5P: []
   });
   const [selected, setSelected] = useState<ServiceKey>("SUN_8A");
   const [scheduleMode, setScheduleMode] = useState<ScheduleMode>("winter");
@@ -68,15 +68,13 @@ export default function UploadView() {
     if (getVolunteerCount(all.SUN_8A) > 0) setSelected("SUN_8A");
     else if (getVolunteerCount(all.SUN_10A) > 0) setSelected("SUN_10A");
     else if (getVolunteerCount(all.SUN_12P) > 0) setSelected("SUN_12P");
-    else if (getVolunteerCount(all.SUN_7P) > 0) setSelected("SUN_7P");
-    else if (getVolunteerCount(all.SUN_8P) > 0) setSelected("SUN_8P");
+    else if (getVolunteerCount(all.SUN_5P) > 0) setSelected("SUN_5P");
 
     const any =
       getVolunteerCount(all.SUN_8A) +
       getVolunteerCount(all.SUN_10A) +
       getVolunteerCount(all.SUN_12P) +
-      getVolunteerCount(all.SUN_7P) +
-      getVolunteerCount(all.SUN_8P) > 0;
+      getVolunteerCount(all.SUN_5P) > 0;
 
     setMessage(any ? null : "No se encontraron voluntarios en los horarios.");
   }, [extractedText, scheduleMode]);
@@ -102,8 +100,7 @@ export default function UploadView() {
       SUN_8A: getVolunteerCount(byService.SUN_8A ?? []),
       SUN_10A: getVolunteerCount(byService.SUN_10A ?? []),
       SUN_12P: getVolunteerCount(byService.SUN_12P ?? []),
-      SUN_7P: getVolunteerCount(byService.SUN_7P ?? []),
-      SUN_8P: getVolunteerCount(byService.SUN_8P ?? []),
+      SUN_5P: getVolunteerCount(byService.SUN_5P ?? []),
     }),
     [byService]
   );
@@ -175,7 +172,7 @@ export default function UploadView() {
             onFechaChange={setFechaISO} 
             toParserDetalles={toParserDetalles}
             onSaved={() => alert("✅ Guardado")}
-            disableSave={selected === "SUN_7P"}
+            disableSave={selected === "SUN_5P"}
             fecha={fechaDisplay}
             servicio={servicio}
           />
