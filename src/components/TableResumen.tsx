@@ -5,6 +5,7 @@ import type { ParserDetalle } from "../features/checkins/buildPayload";
 import SaveListModal from "../components/SaveListModal";
 import { buildPayload } from "../features/checkins/buildPayload";
 import { postLista } from "../api/client";
+import { useLocalStorage } from "../hooks/useLocalStorage";
 import * as toast from "../lib/toast";
 // + NUEVO import:
 import { applyTextFormat, type TextFormat, cycleFormat, FORMAT_LABEL } from "../utils/textFormatter";
@@ -72,6 +73,7 @@ const TableResumen = ({
   const [areaFormat, setAreaFormat] = useState<TextFormat>('capitalize');
   const [sortColumn, setSortColumn] = useState<"area" | "total" | "late">("area");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [tableHeight, setTableHeight] = useLocalStorage<number>("checkin:tableHeight", 500);
 
 
 
@@ -325,6 +327,21 @@ const TableResumen = ({
             )}
           </div>
 
+          <div className="flex items-center gap-1.5 border border-gray-300 rounded-lg px-2 py-1 bg-white">
+            <Icon name="height" className="text-gray-500 text-base" />
+            <input
+              type="range"
+              min={200}
+              max={800}
+              step={50}
+              value={tableHeight}
+              onChange={(e) => setTableHeight(Number(e.target.value))}
+              className="w-24 accent-indigo-600"
+              title={`Altura: ${tableHeight}px`}
+            />
+            <span className="text-xs text-gray-500 w-10 text-right">{tableHeight}px</span>
+          </div>
+
           <IconButton
             onClick={() => setAreaFormat((f) => cycleFormat(f))}
             onlyIcon
@@ -400,7 +417,7 @@ const TableResumen = ({
 
 
       {/* Tabla */}
-      <div className="overflow-y-auto max-h-[500px]">
+      <div className="overflow-y-auto" style={{ maxHeight: tableHeight }}>
         <table className="w-full table-auto border-collapse">
           <thead className="bg-gray-200 sticky top-0 z-10">
             <tr>
