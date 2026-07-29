@@ -15,11 +15,7 @@ import { applyTextFormat, type TextFormat, cycleFormat, FORMAT_LABEL } from "../
 
 interface TableResumenProps {
   data: AreaResumen[];
-  sortOrder: "asc" | "desc";
-  onToggleSort: () => void;
   lateLabel?: string;
-  fecha?: string;
-  servicio?: string;
   showTotalsRow?: boolean;
   onReorder?: (next: AreaResumen[]) => void;
   /** Se invoca al confirmar edición con el nuevo orden (solo incluidos) y la lista de excluidos */
@@ -28,8 +24,7 @@ interface TableResumenProps {
   sourceFile?: File | null;
   fechaISO?: string;
   toParserDetalles?: (rows: AreaResumen[]) => ParserDetalle[];
-  onSaved?: () => void; // opcional, para callback al terminar
-  onFechaChange?: (iso: string) => void; // 👈 nuevo
+  onSaved?: () => void;
   disableSave?: boolean;
   onClear?: () => void;
 }
@@ -41,8 +36,6 @@ const keyOf = (x: AreaResumen, fallbackIndex: number) =>
 
 const TableResumen = ({
   data,
-  sortOrder,
-  onToggleSort,
   lateLabel = "Llegaron después del umbral",
   showTotalsRow = true,
   onReorder,
@@ -51,10 +44,7 @@ const TableResumen = ({
   fechaISO,
   toParserDetalles,
   onSaved,
-  onFechaChange,
-  disableSave = false,
-  fecha = '',
-  servicio = '',
+  disableSave: _disableSave = false,
   onClear,
 }: TableResumenProps) => {
   const [openSave, setOpenSave] = useState(false);
@@ -149,9 +139,6 @@ const TableResumen = ({
     [rows, excluded]
   );
 
-  // ⬇️ condición del botón Guardar
-  const canSave = Boolean(sourceFile && fechaISO && toParserDetalles && includedRows.length > 0 && !disableSave);
-
   async function handleConfirmSave({ nombre, clave }: { nombre: string; clave: string }) {
     if (!sourceFile || !fechaISO || !toParserDetalles) return;
     try {
@@ -173,12 +160,6 @@ const TableResumen = ({
     } catch (e: any) {
       toast.error(e?.message || "Error al guardar");
     }
-  }
-
-  function openSaveModal() {
-    // puedes forzar commit visual si quieres:
-    // handleCommit(); // opcional
-    setOpenSave(true);
   }
 
 
@@ -276,19 +257,7 @@ const TableResumen = ({
 
   const totalExcluded = excluded.size;
 
-  const isoToDisplay = (iso?: string) => {
-    if (!iso) return "";
-    const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if (!m) return "";
-    const [, y, mm, d] = m;
-    return `${d}-${mm}-${y}`;
-  };
-  const displayToIso = (display: string) => {
-    const m = display.match(/^(\d{2})-(\d{2})-(\d{4})$/);
-    if (!m) return "";
-    const [, d, mm, y] = m;
-    return `${y}-${mm}-${d}`;
-  };
+
 
 
   return (

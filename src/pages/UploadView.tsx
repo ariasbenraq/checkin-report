@@ -5,7 +5,6 @@ import type { AreaResumen } from "../features/checkins/types/resumen";
 import { parsePdfTextAllServices } from "../utils/pdfParser";
 import {
   getLateLabel,
-  getServiceName,
   type ServiceKey,
 } from "../features/checkins/constants";
 import { ServicePicker } from "../components/ServicePicker";
@@ -42,15 +41,12 @@ export default function UploadView() {
     { SUN_8A: [], SUN_10A: [], SUN_12P: [], SUN_5P: [] }
   );
   const [selected, setSelected] = useLocalStorage<ServiceKey>("checkin:selected", "SUN_8A");
-  const [sortOrder, setSortOrder] = useLocalStorage<"asc" | "desc">("checkin:sortOrder", "asc");
   const [message, setMessage] = useState<string | null>(null);
 
   // ⬇️ nuevo: file y fecha para el payload
   const [file, setFile] = useState<File | null>(null);
   const [fechaISO, setFechaISO] = useLocalStorage<string>("checkin:fechaISO", "");
   const [extractedText, setExtractedText] = useLocalStorage<string>("checkin:extractedText", "");
-
-  const onToggleSort = () => setSortOrder(s => (s === "asc" ? "desc" : "asc"));
 
   // Recibe TEXTO + FILE desde PdfUploader (¡cambiamos la firma!)
   const handleExtracted = (fullText: string, f: File) => {
@@ -62,7 +58,6 @@ export default function UploadView() {
   const handleClear = () => {
     setByService({ SUN_8A: [], SUN_10A: [], SUN_12P: [], SUN_5P: [] });
     setSelected("SUN_8A");
-    setSortOrder("asc");
     setFechaISO("");
     setExtractedText("");
     setFile(null);
@@ -90,21 +85,10 @@ export default function UploadView() {
     setMessage(any ? null : "No se encontraron voluntarios en los horarios.");
   }, [extractedText]);
 
-  const today = new Date();
-  const fechaDisplay = `${String(today.getDate()).padStart(2, '0')}-${String(today.getMonth() + 1).padStart(2, '0')}-${today.getFullYear()}`;
-  const servicio = getServiceName(selected);
-
-  // datos para la tabla (ordenados)
+  // datos para la tabla
   const data = useMemo(() => {
-    const arr = byService[selected] ?? [];
-    const copy = [...arr];
-    copy.sort((a, b) =>
-      sortOrder === "asc"
-        ? a.area.localeCompare(b.area, "es")
-        : b.area.localeCompare(a.area, "es")
-    );
-    return copy;
-  }, [byService, selected, sortOrder]);
+    return byService[selected] ?? [];
+  }, [byService, selected]);
 
   const counts = useMemo(
     () => ({
@@ -152,17 +136,12 @@ export default function UploadView() {
 
           <TableResumen
             data={data}
-            sortOrder={sortOrder}
-            onToggleSort={onToggleSort}
             lateLabel={getLateLabel(selected)}
             sourceFile={file}
             fechaISO={fechaISO}
-            onFechaChange={setFechaISO} 
             toParserDetalles={toParserDetalles}
             onSaved={() => toast.success("Guardado")}
             disableSave={selected === "SUN_5P"}
-            fecha={fechaDisplay}
-            servicio={servicio}
             onClear={handleClear}
           />
         </div>
