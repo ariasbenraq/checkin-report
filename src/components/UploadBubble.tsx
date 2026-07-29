@@ -1,5 +1,6 @@
 // src/components/UploadBubble.tsx
 import { motion } from "framer-motion";
+import { Icon } from "./ui";
 
 export default function UploadBubble({
   onExpand,
@@ -30,7 +31,7 @@ export default function UploadBubble({
       aria-label="Abrir cargador de PDF"
       title={busy ? "Procesando…" : fileName || "Subir PDF"}
     >
-      <span className="material-symbols-outlined">picture_as_pdf</span>
+      <Icon name="picture_as_pdf" />
       {/* 👇 oculta el texto si compact */}
       {!compact && (
         <span className="text-sm max-w-[14rem] truncate">

@@ -1,6 +1,7 @@
 // src/App.tsx
 import { useEffect, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
+import { Toaster } from "react-hot-toast";
 import Navbar from "./components/Navbar";
 import UploadView from "./pages/UploadView";
 import Home from "./pages/Home";
@@ -56,6 +57,30 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gray-100">
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            borderRadius: "8px",
+            background: "#1f2937",
+            color: "#f9fafb",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+          },
+          success: {
+            iconTheme: {
+              primary: "#10b981",
+              secondary: "#f9fafb",
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: "#ef4444",
+              secondary: "#f9fafb",
+            },
+          },
+        }}
+      />
       <Navbar current={currentView} onNavigate={setCurrentView} />
       {currentView === "upload" && (
         <UploadDock

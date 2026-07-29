@@ -1,7 +1,7 @@
 // src/utils/pdfParser.ts
 import { ALL_AREAS } from '../domain/areas';
 import type { AreaResumen } from "../features/checkins/types/resumen";
-import type { ScheduleMode, ServiceKey } from "../features/checkins/constants";
+import type { ServiceKey } from "../features/checkins/constants";
 
 // ---------- helpers ----------
 function clean(str: string): string {
@@ -14,41 +14,41 @@ function clean(str: string): string {
 }
 
 const AREA_PATTERNS: Record<string, string> = {
-    "Voluntarios CDV > Alabanzas >": "Alabanza",
+    "Voluntarios CDV > Producción Lince > Alabanza": "Alabanza",
     // "Voluntarios CDV > Alabanzas > Asistente de equipo": "Asistente de equipo",
     "Voluntarios CDV > Producción Lince > Atmósfera": "Atmósfera",
-    "Voluntarios CDV > CDV LINCE > Velover": "Velover (Cafeteria)",
-    "Voluntarios CDV > CDV LINCE > Equipo Bienvenida": "Bienvenida",
-    "Voluntarios CDV > CDV LINCE > Bautismo": "Bautismo",
+    "Voluntarios CDV > CDV > Velover": "Velover (Cafeteria)",
+    "Voluntarios CDV > CDV > Equipo Bienvenida": "Bienvenida",
+    "Voluntarios CDV > CDV > Bautizos": "Bautismo",
     "Voluntarios CDV > Producción Lince > Cámaras": "Cámaras & Video",
     "Voluntarios CDV > Contabilidad": "Contabilidad (Modulo dar)",
-    "Voluntarios CDV > CDV LINCE > Crecer": "Crecer",
-    "Voluntarios CDV > CDV LINCE > Dedicaciones": "Dedicaciones",
+    "Voluntarios CDV > CDV > Crecer": "Crecer",
+    "Voluntarios CDV > CDV > Dedicaciones": "Dedicaciones",
     "Voluntarios CDV > Eventos > Registro": "Registro",
     "Voluntarios CDV > Eventos > Desayuno": "Desayuno",
     "Voluntarios CDV > Voluntario ED": "ED",
-    "Voluntarios CDV > CDV LINCE > Equipo Médico": "Equipo Médico",
-    "Voluntarios CDV > CDV LINCE > Fin de semana inolvidable": "Fin de semana Inolvidable",
-    "Voluntarios CDV > CDV LINCE > Hombres CDV": "Hombres CDV",
-    "Voluntarios CDV > CDV LINCE > Informes": "Informes",
+    "Voluntarios CDV > CDV > Equipo Médico": "Equipo Médico",
+    "Voluntarios CDV > CDV > Fin de semana inolvidable": "Fin de semana Inolvidable",
+    "Voluntarios CDV > CDV > Hombres CDV": "Hombres CDV",
+    "Voluntarios CDV > CDV > Informes": "Informes",
     // "Kids > Bebes - Lince": "Kids",
     "Voluntarios CDV > Kids Voluntarios": "Kids",
     "Voluntarios CDV > Eventos > Logística": "Logística",
     "Voluntarios CDV > Producción Lince > Luces": "Luces",
-    "Voluntarios CDV > CDV LINCE > Mantenimiento": "Mantenimiento",
-    "Voluntarios CDV > CDV LINCE > Matrimonios": "Matrimonios",
+    "Voluntarios CDV > CDV > Mantenimiento": "Mantenimiento",
+    "Voluntarios CDV > CDV > Matrimonios": "Matrimonios",
     "Voluntarios CDV > Producción Lince > Producción": "Producción",
-    "Voluntarios CDV > CDV LINCE > Recursos": "Recursos",
-    "Voluntarios CDV > CDV LINCE > Reps": "Reps",
+    "Voluntarios CDV > CDV > Recursos": "Recursos",
+    "Voluntarios CDV > CDV > Reps": "Reps",
     "Voluntarios CDV > Eventos > Sala Verde": "Sala Verde",
-    "Voluntarios CDV > CDV LINCE > Seguridad": "Seguridad",
-    "Voluntarios CDV > CDV LINCE > Servolución": "Servolución",
+    "Voluntarios CDV > CDV > Seguridad": "Seguridad",
+    "Voluntarios CDV > CDV > Servolución": "Servolución",
     "Voluntarios CDV > Producción Lince > Sonido": "Sonido",
     "Voluntarios CDV > Producción Lince > Voluntario": "Staff Pastoral (Voluntario)",
     "Voluntarios CDV > Equipo ministerial > Líder de Servicio": "Líder de Servicio",
     "Voluntarios CDV > Equipo ministerial > IDL": "IDL",
     "Voluntarios CDV > Producción Lince > Visuales": "Visuales",
-    "Voluntarios CDV > CDV LINCE > Grupos pequeños": "Grupos pequeños",
+    "Voluntarios CDV > CDV > Grupos pequeños": "Grupos pequeños",
     "Voluntarios CDV > Comunicaciones > Comms": "Comms",
 };
 
@@ -61,72 +61,33 @@ interface ServiceTimeConfig {
 }
 const t = (h: number, m: number, ap: 'a' | 'p') => ((h % 12) + (ap === 'p' ? 12 : 0)) * 60 + m;
 
-function getServiceTimes(scheduleMode: ScheduleMode): ServiceTimeConfig[] {
-    return scheduleMode === 'summer'
-        ? [
-            {
-                key: 'SUN_8A',
-                heading: 'Sunday 8:00a',
-                total: { fromMinutes: t(7, 0, 'a'), toMinutes: t(8, 0, 'a') },
-                afterViosMinutes: t(7, 0, 'a'),
-            },
-            {
-                key: 'SUN_10A',
-                heading: 'Sunday 10:00a',
-                total: { fromMinutes: t(9, 30, 'a'), toMinutes: t(10, 0, 'a') },
-                afterViosMinutes: t(9, 30, 'a'),
-            },
-            {
-                key: 'SUN_12P',
-                heading: 'Sunday 12:00p',
-                total: { fromMinutes: t(11, 30, 'a'), toMinutes: t(12, 0, 'p') },
-                afterViosMinutes: t(11, 30, 'a'),
-            },
-            {
-                key: 'SUN_7P',
-                heading: 'Sunday 6:00p',
-                total: { fromMinutes: t(5, 30, 'p'), toMinutes: t(6, 0, 'p') },
-                afterViosMinutes: t(5, 30, 'p'),
-            },
-            {
-                key: 'SUN_8P',
-                heading: 'Sunday 8:00p',
-                total: { fromMinutes: t(7, 30, 'p'), toMinutes: t(8, 0, 'p') },
-                afterViosMinutes: t(7, 55, 'p'),
-            },
-        ]
-        : [
-            {
-                key: 'SUN_8A',
-                heading: 'Sunday 9:00a',
-                total: { fromMinutes: t(8, 30, 'a'), toMinutes: t(9, 0, 'a') },
-                afterViosMinutes: t(8, 30, 'a'),
-            },
-            {
-                key: 'SUN_10A',
-                heading: 'Sunday 11:00a',
-                total: { fromMinutes: t(10, 30, 'a'), toMinutes: t(11, 0, 'a') },
-                afterViosMinutes: t(10, 30, 'a'),
-            },
-            {
-                key: 'SUN_12P',
-                heading: 'Sunday 1:00p',
-                total: { fromMinutes: t(12, 30, 'p'), toMinutes: t(1, 0, 'p') },
-                afterViosMinutes: t(12, 30, 'p'),
-            },
-            {
-                key: 'SUN_7P',
-                heading: 'Sunday 6:00p',
-                total: { fromMinutes: t(5, 30, 'p'), toMinutes: t(6, 0, 'p') },
-                afterViosMinutes: t(5, 30, 'p'),
-            },
-            {
-                key: 'SUN_8P',
-                heading: 'Sunday 8:00p',
-                total: { fromMinutes: t(7, 30, 'p'), toMinutes: t(8, 0, 'p') },
-                afterViosMinutes: t(7, 55, 'p'),
-            },
-        ];
+function getServiceTimes(): ServiceTimeConfig[] {
+    return [
+        {
+            key: 'SUN_8A',
+            heading: 'Sunday 8:00a',
+            total: { fromMinutes: t(7, 0, 'a'), toMinutes: t(8, 0, 'a') },
+            afterViosMinutes: t(7, 0, 'a'),
+        },
+        {
+            key: 'SUN_10A',
+            heading: 'Sunday 10:00a',
+            total: { fromMinutes: t(9, 30, 'a'), toMinutes: t(10, 0, 'a') },
+            afterViosMinutes: t(9, 30, 'a'),
+        },
+        {
+            key: 'SUN_12P',
+            heading: 'Sunday 12:00p',
+            total: { fromMinutes: t(11, 30, 'a'), toMinutes: t(12, 0, 'p') },
+            afterViosMinutes: t(11, 30, 'a'),
+        },
+        {
+            key: 'SUN_5P',
+            heading: 'Sunday 5:00p',
+            total: { fromMinutes: t(4, 0, 'p'), toMinutes: t(5, 0, 'p') },
+            afterViosMinutes: t(4, 0, 'p'),
+        },
+    ];
 }
 
 // const isInTotal = (min: number, cfg: ServiceTimeConfig) =>
@@ -156,23 +117,22 @@ function splitByServiceSections(text: string): { heading: string; body: string }
     return out;
 }
 
-function resolveServiceByHeading(fullHeadingLine: string, scheduleMode: ScheduleMode): ServiceTimeConfig | null {
+function resolveServiceByHeading(fullHeadingLine: string): ServiceTimeConfig | null {
     const m = /Grouped by Time:\s*(.+)$/i.exec(fullHeadingLine.trim());
     if (!m) return null;
     const head = m[1].trim().toLowerCase();
-    return getServiceTimes(scheduleMode).find(s => s.heading.toLowerCase() === head) ?? null;
+    return getServiceTimes().find(s => s.heading.toLowerCase() === head) ?? null;
 }
 
 // ---------- API principal: devuelve 3 arreglos ----------
 export function parsePdfTextAllServices(
-    text: string,
-    scheduleMode: ScheduleMode = 'winter'
+    text: string
 ): Record<ServiceKey, AreaResumen[]> {
     const sections = splitByServiceSections(text);
 
     // acumulador por servicio y por área
     const acc: Record<ServiceKey, Record<string, { total: number; lateCount: number }>> = {
-        SUN_8A: {}, SUN_10A: {}, SUN_12P: {}, SUN_7P: {}, SUN_8P: {}
+        SUN_8A: {}, SUN_10A: {}, SUN_12P: {}, SUN_5P: {}
     };
 
     (Object.keys(acc) as ServiceKey[]).forEach((svc) => {
@@ -185,7 +145,7 @@ export function parsePdfTextAllServices(
     const timeRegex = /(\d{1,2})(?::(\d{2}))?\s*(a|am|p|pm)\b/gi;
 
     for (const sec of sections) {
-        const cfg = resolveServiceByHeading(sec.heading, scheduleMode);
+        const cfg = resolveServiceByHeading(sec.heading);
         if (!cfg) continue; // sección no configurada -> se ignora
 
         // Divide el cuerpo por bloques de área (tu lógica)
@@ -245,7 +205,6 @@ export function parsePdfTextAllServices(
         SUN_8A: toResumen(acc.SUN_8A),
         SUN_10A: toResumen(acc.SUN_10A),
         SUN_12P: toResumen(acc.SUN_12P),
-        SUN_7P: toResumen(acc.SUN_7P),
-        SUN_8P: toResumen(acc.SUN_8P),
+        SUN_5P: toResumen(acc.SUN_5P),
     };
 }

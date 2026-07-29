@@ -1,10 +1,12 @@
 import type { AreaResumen } from "../features/checkins/types/resumen";
 import { useMemo, useEffect, useRef, useState } from "react";
-import { IconButton } from "../components/ui";
+import { IconButton, Icon } from "../components/ui";
 import type { ParserDetalle } from "../features/checkins/buildPayload";
 import SaveListModal from "../components/SaveListModal";
 import { buildPayload } from "../features/checkins/buildPayload";
 import { postLista } from "../api/client";
+import { useLocalStorage } from "../hooks/useLocalStorage";
+import * as toast from "../lib/toast";
 // + NUEVO import:
 import { applyTextFormat, type TextFormat, cycleFormat, FORMAT_LABEL } from "../utils/textFormatter";
 
@@ -29,6 +31,7 @@ interface TableResumenProps {
   onSaved?: () => void; // opcional, para callback al terminar
   onFechaChange?: (iso: string) => void; // 👈 nuevo
   disableSave?: boolean;
+  onClear?: () => void;
 }
 
 const nf = new Intl.NumberFormat("es-PE");
@@ -52,6 +55,7 @@ const TableResumen = ({
   disableSave = false,
   fecha = '',
   servicio = '',
+  onClear,
 }: TableResumenProps) => {
   const [openSave, setOpenSave] = useState(false);
   const [defaultName, setDefaultName] = useState<string>("");
@@ -60,13 +64,16 @@ const TableResumen = ({
   const [rows, setRows] = useState<AreaResumen[]>(data ?? []);
   const [showExcluded, setShowExcluded] = useState(false);
   const [excluded, setExcluded] = useState<Set<string>>(new Set());
+  const [searchTerm, setSearchTerm] = useState("");
 
   const dragIndexRef = useRef<number | null>(null);
   const overIndexRef = useRef<number | null>(null);
 
   // dentro del componente
   const [areaFormat, setAreaFormat] = useState<TextFormat>('capitalize');
-
+  const [sortColumn, setSortColumn] = useState<"area" | "total" | "late">("area");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [tableHeight, setTableHeight] = useLocalStorage<number>("checkin:tableHeight", 500);
 
 
 
@@ -88,11 +95,40 @@ const TableResumen = ({
     }
   }, [sourceFile, fechaISO]);
 
-  // Filas visibles según showExcluded
+  // Filas visibles según showExcluded, searchTerm y sortColumn
   const visibleRows = useMemo(() => {
-    if (!editMode || showExcluded) return rows;
-    return rows.filter((r, i) => !excluded.has(keyOf(r, i)));
-  }, [rows, editMode, showExcluded, excluded]);
+    let result = rows;
+    if (editMode && !showExcluded) {
+      result = result.filter((r, i) => !excluded.has(keyOf(r, i)));
+    }
+    if (searchTerm.trim()) {
+      const term = searchTerm.trim().toLowerCase();
+      result = result.filter((r) => (r.area ?? "").toLowerCase().includes(term));
+    }
+    // Aplicar ordenamiento
+    const sorted = [...result];
+    sorted.sort((a, b) => {
+      let cmp = 0;
+      if (sortColumn === "area") {
+        cmp = (a.area ?? "").localeCompare(b.area ?? "", "es");
+      } else if (sortColumn === "total") {
+        cmp = Number(a.total ?? 0) - Number(b.total ?? 0);
+      } else {
+        cmp = Number(a.lateCount ?? 0) - Number(b.lateCount ?? 0);
+      }
+      return sortDirection === "asc" ? cmp : -cmp;
+    });
+    return sorted;
+  }, [rows, editMode, showExcluded, excluded, searchTerm, sortColumn, sortDirection]);
+
+  const handleSort = (column: "area" | "total" | "late") => {
+    if (sortColumn === column) {
+      setSortDirection((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortColumn(column);
+      setSortDirection("asc");
+    }
+  };
 
   // Totales SOLO con incluidas
   const { totalVol, totalLate } = useMemo(() => {
@@ -135,7 +171,7 @@ const TableResumen = ({
       setEditMode(false);
       onSaved?.();
     } catch (e: any) {
-      alert(e?.message || "Error al guardar");
+      toast.error(e?.message || "Error al guardar");
     }
   }
 
@@ -225,6 +261,7 @@ const TableResumen = ({
     // Copiar al portapapeles (con fallback)
     try {
       void navigator.clipboard.writeText(tsv);
+      toast.success("Tabla copiada al portapapeles");
     } catch {
       const ta = document.createElement("textarea");
       ta.value = tsv;
@@ -232,6 +269,7 @@ const TableResumen = ({
       ta.select();
       document.execCommand("copy");
       document.body.removeChild(ta);
+      toast.success("Tabla copiada al portapapeles");
     }
   }
 
@@ -259,25 +297,7 @@ const TableResumen = ({
       <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 bg-white/70 border-b">
         <div className="flex items-center gap-2">
           <h3 className="font-semibold">Resumen por área</h3>
-          {/* Fecha compacta junto al título */}
-          {onFechaChange && (
-            <label className="text-sm flex items-center gap-2 bg-white/80 border border-black/10 rounded-full pl-2 pr-3 py-1">
-              <span className="material-symbols-outlined text-gray-600 text-base">calendar_month</span>
-              <input
-                aria-label="Fecha (DD-MM-YYYY)"
-                placeholder="DD-MM-YYYY"
-                value={isoToDisplay(fechaISO)}
-                onChange={(e) => {
-                  const iso = displayToIso(e.target.value);
-                  if (iso) onFechaChange(iso); // solo actualiza cuando el formato es válido
-                }}
-                inputMode="numeric"
-                pattern="\d{2}-\d{2}-\d{4}"
-                title="Usa el formato DD-MM-YYYY"
-                className="bg-transparent outline-none text-gray-800 w-[9.5rem]"
-              />
-            </label>
-          )}
+
           {editMode && totalExcluded > 0 && (
             <span className="text-xs rounded-full px-2 py-0.5 bg-amber-100 text-amber-800">
               Excluidas: {totalExcluded}
@@ -286,18 +306,42 @@ const TableResumen = ({
         </div>
 
         <div className="flex items-center gap-2">
-
-          {/* Guardar (solo si hay PDF + fecha + mapeador + filas incluidas) */}
-          {canSave && (
-            <IconButton
-              onClick={openSaveModal}
-              onlyIcon
-              label="Guardar lista en el servidor"
-              title="Guardar lista (elige nombre y clave)"
-              icon="database_upload"
-              variant="primary"
+          <div className="relative">
+            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+              <Icon name="search" className="text-base" />
+            </span>
+            <input
+              type="text"
+              placeholder="Buscar área..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-8 pr-2 py-1.5 text-sm border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-40"
             />
-          )}
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm("")}
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                <Icon name="close" className="text-sm" />
+              </button>
+            )}
+          </div>
+
+          <div className="flex items-center gap-1.5 border border-gray-300 rounded-lg px-2 py-1 bg-white">
+            <Icon name="height" className="text-gray-500 text-base" />
+            <input
+              type="range"
+              min={200}
+              max={800}
+              step={50}
+              value={tableHeight}
+              onChange={(e) => setTableHeight(Number(e.target.value))}
+              className="w-24 accent-indigo-600"
+              title={`Altura: ${tableHeight}px`}
+            />
+            <span className="text-xs text-gray-500 w-10 text-right">{tableHeight}px</span>
+          </div>
+
           <IconButton
             onClick={() => setAreaFormat((f) => cycleFormat(f))}
             onlyIcon
@@ -314,15 +358,16 @@ const TableResumen = ({
             icon="content_copy"
             variant="outline"
           />
-          <IconButton
-            onClick={onToggleSort}
-            disabled={editMode}
-            onlyIcon
-            label={editMode ? "Desactiva edición para ordenar por columna" : "Ordenar por área"}
-            title={sortOrder === "asc" ? "Ordenar descendente" : "Ordenar ascendente"}
-            icon={sortOrder === "asc" ? "arrow_upward" : "arrow_downward"}
-            variant="outline"
-          />
+          {onClear && (
+            <IconButton
+              onClick={onClear}
+              onlyIcon
+              label="Limpiar datos de la tabla"
+              title="Limpiar datos de la tabla"
+              icon="delete"
+              variant="outline"
+            />
+          )}
           {editMode && (
             <IconButton
               onClick={() => setShowExcluded((v) => !v)}
@@ -372,24 +417,52 @@ const TableResumen = ({
 
 
       {/* Tabla */}
-      <div className="overflow-y-auto max-h-[500px]">
+      <div className="overflow-y-auto" style={{ maxHeight: tableHeight }}>
         <table className="w-full table-auto border-collapse">
           <thead className="bg-gray-200 sticky top-0 z-10">
             <tr>
               <th className="w-10 px-2 py-2 text-left">{editMode ? "⋮⋮" : ""}</th>
               {editMode && <th className="w-10 px-2 py-2 text-left">•</th>}
-              <th className="px-4 py-2 text-center whitespace-nowrap">Fecha</th>
-              <th className="px-4 py-2 text-center whitespace-nowrap">Servicio</th>
-              <th className="px-4 py-2 text-left whitespace-nowrap select-none">{applyTextFormat("Área", areaFormat)}</th>
-              <th className="px-4 py-2 text-center whitespace-nowrap">Total voluntarios</th>
-              <th className="px-4 py-2 text-center whitespace-nowrap">{lateLabel}</th>
+              <th
+                className="px-4 py-2 text-left whitespace-nowrap select-none cursor-pointer hover:bg-gray-300 transition"
+                onClick={() => handleSort("area")}
+              >
+                <span className="inline-flex items-center gap-1">
+                  {applyTextFormat("Área", areaFormat)}
+                  {sortColumn === "area" && (
+                    <Icon name={sortDirection === "asc" ? "arrow_upward" : "arrow_downward"} className="text-sm" />
+                  )}
+                </span>
+              </th>
+              <th
+                className="px-4 py-2 text-center whitespace-nowrap select-none cursor-pointer hover:bg-gray-300 transition"
+                onClick={() => handleSort("total")}
+              >
+                <span className="inline-flex items-center gap-1">
+                  Total voluntarios
+                  {sortColumn === "total" && (
+                    <Icon name={sortDirection === "asc" ? "arrow_upward" : "arrow_downward"} className="text-sm" />
+                  )}
+                </span>
+              </th>
+              <th
+                className="px-4 py-2 text-center whitespace-nowrap select-none cursor-pointer hover:bg-gray-300 transition"
+                onClick={() => handleSort("late")}
+              >
+                <span className="inline-flex items-center gap-1">
+                  {lateLabel}
+                  {sortColumn === "late" && (
+                    <Icon name={sortDirection === "asc" ? "arrow_upward" : "arrow_downward"} className="text-sm" />
+                  )}
+                </span>
+              </th>
             </tr>
           </thead>
 
           <tbody className="bg-white">
             {(!visibleRows || visibleRows.length === 0) ? (
               <tr>
-                <td colSpan={editMode ? 7 : 6} className="px-4 py-8 text-center text-gray-500">
+                <td colSpan={editMode ? 5 : 4} className="px-4 py-8 text-center text-gray-500">
                   No hay datos para mostrar.
                 </td>
               </tr>
@@ -429,8 +502,6 @@ const TableResumen = ({
                       </td>
                     )}
 
-                    <td className="px-4 py-2 text-center whitespace-nowrap">{fecha}</td>
-                    <td className="px-4 py-2 text-center whitespace-nowrap">{servicio}</td>
                     <td className="px-4 py-2">{applyTextFormat(item.area ?? '', areaFormat)}</td>
                     <td className="px-4 py-2 text-center">{nf.format(item.total)}</td>
                     <td className="px-4 py-2 text-center">{nf.format(item.lateCount)}</td>
@@ -445,8 +516,6 @@ const TableResumen = ({
               <tr className="border-t font-semibold">
                 <td className="px-2 py-2" />
                 {editMode && <td className="px-2 py-2" />}
-                <td className="px-4 py-2 text-center">{fecha}</td>
-                <td className="px-4 py-2 text-center">{servicio}</td>
                 <td className="px-4 py-2 text-right">
                   Totales{totalExcluded > 0 ? ` (excluidas: ${totalExcluded})` : ""}:
                 </td>
