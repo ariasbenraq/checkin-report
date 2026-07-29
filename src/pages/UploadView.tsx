@@ -9,6 +9,7 @@ import {
   type ServiceKey,
 } from "../features/checkins/constants";
 import { ServicePicker } from "../components/ServicePicker";
+import { useLocalStorage } from "../hooks/useLocalStorage";
 import * as toast from "../lib/toast";
 
 // ⬇️ imports para guardar
@@ -36,17 +37,18 @@ function getVolunteerCount(rows: AreaResumen[] | undefined): number {
 }
 
 export default function UploadView() {
-  const [byService, setByService] = useState<Record<ServiceKey, AreaResumen[]>>({
-    SUN_8A: [], SUN_10A: [], SUN_12P: [], SUN_5P: []
-  });
-  const [selected, setSelected] = useState<ServiceKey>("SUN_8A");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [byService, setByService] = useLocalStorage<Record<ServiceKey, AreaResumen[]>>(
+    "checkin:byService",
+    { SUN_8A: [], SUN_10A: [], SUN_12P: [], SUN_5P: [] }
+  );
+  const [selected, setSelected] = useLocalStorage<ServiceKey>("checkin:selected", "SUN_8A");
+  const [sortOrder, setSortOrder] = useLocalStorage<"asc" | "desc">("checkin:sortOrder", "asc");
   const [message, setMessage] = useState<string | null>(null);
 
   // ⬇️ nuevo: file y fecha para el payload
   const [file, setFile] = useState<File | null>(null);
-  const [fechaISO, setFechaISO] = useState<string>("");
-  const [extractedText, setExtractedText] = useState<string>("");
+  const [fechaISO, setFechaISO] = useLocalStorage<string>("checkin:fechaISO", "");
+  const [extractedText, setExtractedText] = useLocalStorage<string>("checkin:extractedText", "");
 
   const onToggleSort = () => setSortOrder(s => (s === "asc" ? "desc" : "asc"));
 
@@ -55,6 +57,17 @@ export default function UploadView() {
     setFile(f);
     setFechaISO(extractFechaFromName(f.name));
     setExtractedText(fullText);
+  };
+
+  const handleClear = () => {
+    setByService({ SUN_8A: [], SUN_10A: [], SUN_12P: [], SUN_5P: [] });
+    setSelected("SUN_8A");
+    setSortOrder("asc");
+    setFechaISO("");
+    setExtractedText("");
+    setFile(null);
+    setMessage(null);
+    toast.success("Tabla limpiada");
   };
 
   useEffect(() => {
@@ -150,6 +163,7 @@ export default function UploadView() {
             disableSave={selected === "SUN_5P"}
             fecha={fechaDisplay}
             servicio={servicio}
+            onClear={handleClear}
           />
         </div>
       </div>

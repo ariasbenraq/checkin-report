@@ -30,6 +30,7 @@ interface TableResumenProps {
   onSaved?: () => void; // opcional, para callback al terminar
   onFechaChange?: (iso: string) => void; // 👈 nuevo
   disableSave?: boolean;
+  onClear?: () => void;
 }
 
 const nf = new Intl.NumberFormat("es-PE");
@@ -53,6 +54,7 @@ const TableResumen = ({
   disableSave = false,
   fecha = '',
   servicio = '',
+  onClear,
 }: TableResumenProps) => {
   const [openSave, setOpenSave] = useState(false);
   const [defaultName, setDefaultName] = useState<string>("");
@@ -289,6 +291,16 @@ const TableResumen = ({
             icon="content_copy"
             variant="outline"
           />
+          {onClear && (
+            <IconButton
+              onClick={onClear}
+              onlyIcon
+              label="Limpiar datos de la tabla"
+              title="Limpiar datos de la tabla"
+              icon="delete"
+              variant="outline"
+            />
+          )}
           <IconButton
             onClick={onToggleSort}
             disabled={editMode}
