@@ -9,6 +9,7 @@ import {
   type ServiceKey,
 } from "../features/checkins/constants";
 import { ServicePicker } from "../components/ServicePicker";
+import * as toast from "../lib/toast";
 
 // ⬇️ imports para guardar
 import type { ParserDetalle } from "../features/checkins/buildPayload";
@@ -145,7 +146,7 @@ export default function UploadView() {
             fechaISO={fechaISO}
             onFechaChange={setFechaISO} 
             toParserDetalles={toParserDetalles}
-            onSaved={() => alert("✅ Guardado")}
+            onSaved={() => toast.success("Guardado")}
             disableSave={selected === "SUN_5P"}
             fecha={fechaDisplay}
             servicio={servicio}

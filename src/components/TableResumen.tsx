@@ -5,6 +5,7 @@ import type { ParserDetalle } from "../features/checkins/buildPayload";
 import SaveListModal from "../components/SaveListModal";
 import { buildPayload } from "../features/checkins/buildPayload";
 import { postLista } from "../api/client";
+import * as toast from "../lib/toast";
 // + NUEVO import:
 import { applyTextFormat, type TextFormat, cycleFormat, FORMAT_LABEL } from "../utils/textFormatter";
 
@@ -135,7 +136,7 @@ const TableResumen = ({
       setEditMode(false);
       onSaved?.();
     } catch (e: any) {
-      alert(e?.message || "Error al guardar");
+      toast.error(e?.message || "Error al guardar");
     }
   }
 
@@ -225,6 +226,7 @@ const TableResumen = ({
     // Copiar al portapapeles (con fallback)
     try {
       void navigator.clipboard.writeText(tsv);
+      toast.success("Tabla copiada al portapapeles");
     } catch {
       const ta = document.createElement("textarea");
       ta.value = tsv;
@@ -232,6 +234,7 @@ const TableResumen = ({
       ta.select();
       document.execCommand("copy");
       document.body.removeChild(ta);
+      toast.success("Tabla copiada al portapapeles");
     }
   }
 
