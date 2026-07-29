@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import * as pdfjsLib from "pdfjs-dist";
 import "pdfjs-dist/build/pdf.worker.entry";
+import { Icon } from "./ui";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
@@ -61,9 +62,7 @@ const PdfUploader = ({ onExtracted, onBusyChange, onFileSelected }: PdfUploaderP
         onDragOver={handleDragOver}
         className="flex flex-col items-center justify-center px-6 py-10 border-2 border-dashed border-blue-400 rounded-xl cursor-pointer text-center hover:bg-blue-50 transition-colors"
       >
-        <span className="material-symbols-outlined text-5xl text-blue-500 mb-2">
-          upload_file
-        </span>
+        <Icon name="upload_file" className="text-5xl text-blue-500 mb-2" opticalSize={48} />
         <p className="text-gray-600">
           Arrastra tu archivo PDF aquí o haz clic para seleccionar
         </p>

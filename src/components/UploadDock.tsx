@@ -3,6 +3,7 @@ import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import UploadBubble from "./UploadBubble";
 import PdfUploader from "./PdfUploader";
+import { Icon } from "./ui";
 import clsx from "clsx";
 
 export default function UploadDock({
@@ -63,7 +64,7 @@ export default function UploadDock({
               <div className="w-full rounded-xl shadow-md bg-white/90 backdrop-blur border border-black/5">
                 <div className="flex items-center justify-between px-4 py-3 border-b">
                   <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-indigo-600">upload_file</span>
+                    <Icon name="upload_file" className="text-indigo-600" />
                     <h3 className="font-semibold">Cargar PDF</h3>
                   </div>
                   <button
@@ -72,7 +73,7 @@ export default function UploadDock({
                     title="Minimizar"
                     aria-label="Minimizar cargador"
                   >
-                    <span className="material-symbols-outlined text-base">minimize</span>
+                    <Icon name="minimize" className="text-base" />
                     Minimizar
                   </button>
                 </div>
