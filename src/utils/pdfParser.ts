@@ -1,7 +1,7 @@
 // src/utils/pdfParser.ts
 import { ALL_AREAS } from '../domain/areas';
 import type { AreaResumen } from "../features/checkins/types/resumen";
-import type { ScheduleMode, ServiceKey } from "../features/checkins/constants";
+import type { ServiceKey } from "../features/checkins/constants";
 
 // ---------- helpers ----------
 function clean(str: string): string {
@@ -19,7 +19,7 @@ const AREA_PATTERNS: Record<string, string> = {
     "Voluntarios CDV > Producción Lince > Atmósfera": "Atmósfera",
     "Voluntarios CDV > CDV > Velover": "Velover (Cafeteria)",
     "Voluntarios CDV > CDV > Equipo Bienvenida": "Bienvenida",
-    "Voluntarios CDV > CDV > Bautismo": "Bautismo",
+    "Voluntarios CDV > CDV > Bautizos": "Bautismo",
     "Voluntarios CDV > Producción Lince > Cámaras": "Cámaras & Video",
     "Voluntarios CDV > Contabilidad": "Contabilidad (Modulo dar)",
     "Voluntarios CDV > CDV > Crecer": "Crecer",
@@ -61,7 +61,7 @@ interface ServiceTimeConfig {
 }
 const t = (h: number, m: number, ap: 'a' | 'p') => ((h % 12) + (ap === 'p' ? 12 : 0)) * 60 + m;
 
-function getServiceTimes(_scheduleMode: ScheduleMode): ServiceTimeConfig[] {
+function getServiceTimes(): ServiceTimeConfig[] {
     return [
         {
             key: 'SUN_8A',
@@ -117,17 +117,16 @@ function splitByServiceSections(text: string): { heading: string; body: string }
     return out;
 }
 
-function resolveServiceByHeading(fullHeadingLine: string, scheduleMode: ScheduleMode): ServiceTimeConfig | null {
+function resolveServiceByHeading(fullHeadingLine: string): ServiceTimeConfig | null {
     const m = /Grouped by Time:\s*(.+)$/i.exec(fullHeadingLine.trim());
     if (!m) return null;
     const head = m[1].trim().toLowerCase();
-    return getServiceTimes(scheduleMode).find(s => s.heading.toLowerCase() === head) ?? null;
+    return getServiceTimes().find(s => s.heading.toLowerCase() === head) ?? null;
 }
 
 // ---------- API principal: devuelve 3 arreglos ----------
 export function parsePdfTextAllServices(
-    text: string,
-    scheduleMode: ScheduleMode = 'winter'
+    text: string
 ): Record<ServiceKey, AreaResumen[]> {
     const sections = splitByServiceSections(text);
 
@@ -146,7 +145,7 @@ export function parsePdfTextAllServices(
     const timeRegex = /(\d{1,2})(?::(\d{2}))?\s*(a|am|p|pm)\b/gi;
 
     for (const sec of sections) {
-        const cfg = resolveServiceByHeading(sec.heading, scheduleMode);
+        const cfg = resolveServiceByHeading(sec.heading);
         if (!cfg) continue; // sección no configurada -> se ignora
 
         // Divide el cuerpo por bloques de área (tu lógica)

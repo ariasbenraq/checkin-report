@@ -259,25 +259,7 @@ const TableResumen = ({
       <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 bg-white/70 border-b">
         <div className="flex items-center gap-2">
           <h3 className="font-semibold">Resumen por área</h3>
-          {/* Fecha compacta junto al título */}
-          {onFechaChange && (
-            <label className="text-sm flex items-center gap-2 bg-white/80 border border-black/10 rounded-full pl-2 pr-3 py-1">
-              <span className="material-symbols-outlined text-gray-600 text-base">calendar_month</span>
-              <input
-                aria-label="Fecha (DD-MM-YYYY)"
-                placeholder="DD-MM-YYYY"
-                value={isoToDisplay(fechaISO)}
-                onChange={(e) => {
-                  const iso = displayToIso(e.target.value);
-                  if (iso) onFechaChange(iso); // solo actualiza cuando el formato es válido
-                }}
-                inputMode="numeric"
-                pattern="\d{2}-\d{2}-\d{4}"
-                title="Usa el formato DD-MM-YYYY"
-                className="bg-transparent outline-none text-gray-800 w-[9.5rem]"
-              />
-            </label>
-          )}
+
           {editMode && totalExcluded > 0 && (
             <span className="text-xs rounded-full px-2 py-0.5 bg-amber-100 text-amber-800">
               Excluidas: {totalExcluded}
@@ -287,17 +269,7 @@ const TableResumen = ({
 
         <div className="flex items-center gap-2">
 
-          {/* Guardar (solo si hay PDF + fecha + mapeador + filas incluidas) */}
-          {canSave && (
-            <IconButton
-              onClick={openSaveModal}
-              onlyIcon
-              label="Guardar lista en el servidor"
-              title="Guardar lista (elige nombre y clave)"
-              icon="database_upload"
-              variant="primary"
-            />
-          )}
+
           <IconButton
             onClick={() => setAreaFormat((f) => cycleFormat(f))}
             onlyIcon
@@ -378,8 +350,6 @@ const TableResumen = ({
             <tr>
               <th className="w-10 px-2 py-2 text-left">{editMode ? "⋮⋮" : ""}</th>
               {editMode && <th className="w-10 px-2 py-2 text-left">•</th>}
-              <th className="px-4 py-2 text-center whitespace-nowrap">Fecha</th>
-              <th className="px-4 py-2 text-center whitespace-nowrap">Servicio</th>
               <th className="px-4 py-2 text-left whitespace-nowrap select-none">{applyTextFormat("Área", areaFormat)}</th>
               <th className="px-4 py-2 text-center whitespace-nowrap">Total voluntarios</th>
               <th className="px-4 py-2 text-center whitespace-nowrap">{lateLabel}</th>
@@ -389,7 +359,7 @@ const TableResumen = ({
           <tbody className="bg-white">
             {(!visibleRows || visibleRows.length === 0) ? (
               <tr>
-                <td colSpan={editMode ? 7 : 6} className="px-4 py-8 text-center text-gray-500">
+                <td colSpan={editMode ? 5 : 4} className="px-4 py-8 text-center text-gray-500">
                   No hay datos para mostrar.
                 </td>
               </tr>
@@ -429,8 +399,6 @@ const TableResumen = ({
                       </td>
                     )}
 
-                    <td className="px-4 py-2 text-center whitespace-nowrap">{fecha}</td>
-                    <td className="px-4 py-2 text-center whitespace-nowrap">{servicio}</td>
                     <td className="px-4 py-2">{applyTextFormat(item.area ?? '', areaFormat)}</td>
                     <td className="px-4 py-2 text-center">{nf.format(item.total)}</td>
                     <td className="px-4 py-2 text-center">{nf.format(item.lateCount)}</td>
@@ -445,8 +413,6 @@ const TableResumen = ({
               <tr className="border-t font-semibold">
                 <td className="px-2 py-2" />
                 {editMode && <td className="px-2 py-2" />}
-                <td className="px-4 py-2 text-center">{fecha}</td>
-                <td className="px-4 py-2 text-center">{servicio}</td>
                 <td className="px-4 py-2 text-right">
                   Totales{totalExcluded > 0 ? ` (excluidas: ${totalExcluded})` : ""}:
                 </td>

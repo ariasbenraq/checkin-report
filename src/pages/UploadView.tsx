@@ -6,8 +6,6 @@ import { parsePdfTextAllServices } from "../utils/pdfParser";
 import {
   getLateLabel,
   getServiceName,
-  SCHEDULE_LABEL,
-  type ScheduleMode,
   type ServiceKey,
 } from "../features/checkins/constants";
 import { ServicePicker } from "../components/ServicePicker";
@@ -41,7 +39,6 @@ export default function UploadView() {
     SUN_8A: [], SUN_10A: [], SUN_12P: [], SUN_5P: []
   });
   const [selected, setSelected] = useState<ServiceKey>("SUN_8A");
-  const [scheduleMode, setScheduleMode] = useState<ScheduleMode>("winter");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [message, setMessage] = useState<string | null>(null);
 
@@ -62,7 +59,7 @@ export default function UploadView() {
   useEffect(() => {
     if (!extractedText) return;
 
-    const all = parsePdfTextAllServices(extractedText, scheduleMode);
+    const all = parsePdfTextAllServices(extractedText);
     setByService(all);
 
     if (getVolunteerCount(all.SUN_8A) > 0) setSelected("SUN_8A");
@@ -77,7 +74,7 @@ export default function UploadView() {
       getVolunteerCount(all.SUN_5P) > 0;
 
     setMessage(any ? null : "No se encontraron voluntarios en los horarios.");
-  }, [extractedText, scheduleMode]);
+  }, [extractedText]);
 
   const today = new Date();
   const fechaDisplay = `${String(today.getDate()).padStart(2, '0')}-${String(today.getMonth() + 1).padStart(2, '0')}-${today.getFullYear()}`;
@@ -121,34 +118,11 @@ export default function UploadView() {
       {/* Derecha: área principal centrada y con animación sutil */}
       <div className="w-full">
         <div className="mx-auto max-w-3xl transition-all duration-300 motion-safe:animate-[fadein_200ms_ease-out]">
-          {/* Fecha editable: solo visible si ya hay archivo */}
           {/* Selector de servicio */}
-          <div className="mb-4 flex justify-center">
-            <div className="inline-flex rounded-lg border bg-white shadow-sm overflow-hidden">
-              {(["summer", "winter"] as ScheduleMode[]).map((mode, index) => {
-                const active = scheduleMode === mode;
-                return (
-                  <button
-                    key={mode}
-                    type="button"
-                    onClick={() => setScheduleMode(mode)}
-                    className={[
-                      "px-4 py-2 text-sm font-medium",
-                      index > 0 ? "border-l" : "",
-                      active ? "bg-indigo-600 text-white" : "bg-white text-gray-700 hover:bg-gray-50",
-                    ].join(" ")}
-                  >
-                    {SCHEDULE_LABEL[mode]}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
           <div className="mb-4 flex justify-center">
           <ServicePicker
             value={selected}
             onChange={setSelected}
-            scheduleMode={scheduleMode}
             counts={counts}
             className="justify-center"
           />
@@ -166,7 +140,7 @@ export default function UploadView() {
             data={data}
             sortOrder={sortOrder}
             onToggleSort={onToggleSort}
-            lateLabel={getLateLabel(selected, scheduleMode)}
+            lateLabel={getLateLabel(selected)}
             sourceFile={file}
             fechaISO={fechaISO}
             onFechaChange={setFechaISO} 
