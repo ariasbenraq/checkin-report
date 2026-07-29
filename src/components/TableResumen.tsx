@@ -70,7 +70,8 @@ const TableResumen = ({
 
   // dentro del componente
   const [areaFormat, setAreaFormat] = useState<TextFormat>('capitalize');
-
+  const [sortColumn, setSortColumn] = useState<"area" | "total" | "late">("area");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
 
 
@@ -92,7 +93,7 @@ const TableResumen = ({
     }
   }, [sourceFile, fechaISO]);
 
-  // Filas visibles según showExcluded y searchTerm
+  // Filas visibles según showExcluded, searchTerm y sortColumn
   const visibleRows = useMemo(() => {
     let result = rows;
     if (editMode && !showExcluded) {
@@ -102,8 +103,30 @@ const TableResumen = ({
       const term = searchTerm.trim().toLowerCase();
       result = result.filter((r) => (r.area ?? "").toLowerCase().includes(term));
     }
-    return result;
-  }, [rows, editMode, showExcluded, excluded, searchTerm]);
+    // Aplicar ordenamiento
+    const sorted = [...result];
+    sorted.sort((a, b) => {
+      let cmp = 0;
+      if (sortColumn === "area") {
+        cmp = (a.area ?? "").localeCompare(b.area ?? "", "es");
+      } else if (sortColumn === "total") {
+        cmp = Number(a.total ?? 0) - Number(b.total ?? 0);
+      } else {
+        cmp = Number(a.lateCount ?? 0) - Number(b.lateCount ?? 0);
+      }
+      return sortDirection === "asc" ? cmp : -cmp;
+    });
+    return sorted;
+  }, [rows, editMode, showExcluded, excluded, searchTerm, sortColumn, sortDirection]);
+
+  const handleSort = (column: "area" | "total" | "late") => {
+    if (sortColumn === column) {
+      setSortDirection((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortColumn(column);
+      setSortDirection("asc");
+    }
+  };
 
   // Totales SOLO con incluidas
   const { totalVol, totalLate } = useMemo(() => {
@@ -328,15 +351,6 @@ const TableResumen = ({
               variant="outline"
             />
           )}
-          <IconButton
-            onClick={onToggleSort}
-            disabled={editMode}
-            onlyIcon
-            label={editMode ? "Desactiva edición para ordenar por columna" : "Ordenar por área"}
-            title={sortOrder === "asc" ? "Ordenar descendente" : "Ordenar ascendente"}
-            icon={sortOrder === "asc" ? "arrow_upward" : "arrow_downward"}
-            variant="outline"
-          />
           {editMode && (
             <IconButton
               onClick={() => setShowExcluded((v) => !v)}
@@ -392,9 +406,39 @@ const TableResumen = ({
             <tr>
               <th className="w-10 px-2 py-2 text-left">{editMode ? "⋮⋮" : ""}</th>
               {editMode && <th className="w-10 px-2 py-2 text-left">•</th>}
-              <th className="px-4 py-2 text-left whitespace-nowrap select-none">{applyTextFormat("Área", areaFormat)}</th>
-              <th className="px-4 py-2 text-center whitespace-nowrap">Total voluntarios</th>
-              <th className="px-4 py-2 text-center whitespace-nowrap">{lateLabel}</th>
+              <th
+                className="px-4 py-2 text-left whitespace-nowrap select-none cursor-pointer hover:bg-gray-300 transition"
+                onClick={() => handleSort("area")}
+              >
+                <span className="inline-flex items-center gap-1">
+                  {applyTextFormat("Área", areaFormat)}
+                  {sortColumn === "area" && (
+                    <Icon name={sortDirection === "asc" ? "arrow_upward" : "arrow_downward"} className="text-sm" />
+                  )}
+                </span>
+              </th>
+              <th
+                className="px-4 py-2 text-center whitespace-nowrap select-none cursor-pointer hover:bg-gray-300 transition"
+                onClick={() => handleSort("total")}
+              >
+                <span className="inline-flex items-center gap-1">
+                  Total voluntarios
+                  {sortColumn === "total" && (
+                    <Icon name={sortDirection === "asc" ? "arrow_upward" : "arrow_downward"} className="text-sm" />
+                  )}
+                </span>
+              </th>
+              <th
+                className="px-4 py-2 text-center whitespace-nowrap select-none cursor-pointer hover:bg-gray-300 transition"
+                onClick={() => handleSort("late")}
+              >
+                <span className="inline-flex items-center gap-1">
+                  {lateLabel}
+                  {sortColumn === "late" && (
+                    <Icon name={sortDirection === "asc" ? "arrow_upward" : "arrow_downward"} className="text-sm" />
+                  )}
+                </span>
+              </th>
             </tr>
           </thead>
 
