@@ -1,6 +1,6 @@
 import type { AreaResumen } from "../features/checkins/types/resumen";
 import { useMemo, useEffect, useRef, useState } from "react";
-import { IconButton } from "../components/ui";
+import { IconButton, Icon } from "../components/ui";
 import type { ParserDetalle } from "../features/checkins/buildPayload";
 import SaveListModal from "../components/SaveListModal";
 import { buildPayload } from "../features/checkins/buildPayload";
@@ -63,6 +63,7 @@ const TableResumen = ({
   const [rows, setRows] = useState<AreaResumen[]>(data ?? []);
   const [showExcluded, setShowExcluded] = useState(false);
   const [excluded, setExcluded] = useState<Set<string>>(new Set());
+  const [searchTerm, setSearchTerm] = useState("");
 
   const dragIndexRef = useRef<number | null>(null);
   const overIndexRef = useRef<number | null>(null);
@@ -91,11 +92,18 @@ const TableResumen = ({
     }
   }, [sourceFile, fechaISO]);
 
-  // Filas visibles según showExcluded
+  // Filas visibles según showExcluded y searchTerm
   const visibleRows = useMemo(() => {
-    if (!editMode || showExcluded) return rows;
-    return rows.filter((r, i) => !excluded.has(keyOf(r, i)));
-  }, [rows, editMode, showExcluded, excluded]);
+    let result = rows;
+    if (editMode && !showExcluded) {
+      result = result.filter((r, i) => !excluded.has(keyOf(r, i)));
+    }
+    if (searchTerm.trim()) {
+      const term = searchTerm.trim().toLowerCase();
+      result = result.filter((r) => (r.area ?? "").toLowerCase().includes(term));
+    }
+    return result;
+  }, [rows, editMode, showExcluded, excluded, searchTerm]);
 
   // Totales SOLO con incluidas
   const { totalVol, totalLate } = useMemo(() => {
@@ -273,7 +281,26 @@ const TableResumen = ({
         </div>
 
         <div className="flex items-center gap-2">
-
+          <div className="relative">
+            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400">
+              <Icon name="search" className="text-base" />
+            </span>
+            <input
+              type="text"
+              placeholder="Buscar área..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-8 pr-2 py-1.5 text-sm border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-40"
+            />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm("")}
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                <Icon name="close" className="text-sm" />
+              </button>
+            )}
+          </div>
 
           <IconButton
             onClick={() => setAreaFormat((f) => cycleFormat(f))}
