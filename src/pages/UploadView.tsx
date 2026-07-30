@@ -11,25 +11,6 @@ import { ServicePicker } from "../components/ServicePicker";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import * as toast from "../lib/toast";
 
-// ⬇️ imports para guardar
-import type { ParserDetalle } from "../features/checkins/buildPayload";
-
-
-function extractFechaFromName(name: string): string {
-  // busca YYYY-MM-DD en el nombre del archivo; si no, hoy
-  const m = name.match(/\d{4}-\d{2}-\d{2}/);
-  return m ? m[0] : new Date().toISOString().slice(0, 10); UploadView
-}
-
-// mapea AreaResumen[] -> ParserDetalle[]
-function toParserDetalles(rows: AreaResumen[]): ParserDetalle[] {
-  return rows.map((r) => ({
-    area: r.area,
-    total_voluntarios: r.total,      // 👈 ajusta si tu tipo usa otro nombre
-    post_vios: r.lateCount,          // 👈 idem (en tu tabla es la col tardíos)
-    // observaciones?: (si tuvieses)
-  }));
-}
 
 function getVolunteerCount(rows: AreaResumen[] | undefined): number {
   return (rows ?? []).reduce((acc, row) => acc + Number(row.total ?? 0), 0);
@@ -43,24 +24,17 @@ export default function UploadView() {
   const [selected, setSelected] = useLocalStorage<ServiceKey>("checkin:selected", "SUN_8A");
   const [message, setMessage] = useState<string | null>(null);
 
-  // ⬇️ nuevo: file y fecha para el payload
-  const [file, setFile] = useState<File | null>(null);
-  const [fechaISO, setFechaISO] = useLocalStorage<string>("checkin:fechaISO", "");
   const [extractedText, setExtractedText] = useLocalStorage<string>("checkin:extractedText", "");
 
   // Recibe TEXTO + FILE desde PdfUploader (¡cambiamos la firma!)
-  const handleExtracted = (fullText: string, f: File) => {
-    setFile(f);
-    setFechaISO(extractFechaFromName(f.name));
+  const handleExtracted = (fullText: string) => {
     setExtractedText(fullText);
   };
 
   const handleClear = () => {
     setByService({ SUN_8A: [], SUN_10A: [], SUN_12P: [], SUN_5P: [] });
     setSelected("SUN_8A");
-    setFechaISO("");
     setExtractedText("");
-    setFile(null);
     setMessage(null);
     toast.success("Tabla limpiada");
   };
@@ -102,9 +76,9 @@ export default function UploadView() {
 
    useEffect(() => {
     function onPdfExtracted(e: any) {
-      const { text, file } = e.detail || {};
-      if (text && file) {
-        handleExtracted(text, file);
+      const { text } = e.detail || {};
+      if (text) {
+        handleExtracted(text);
       }
     }
     window.addEventListener("pdf:extracted", onPdfExtracted as EventListener);
@@ -132,16 +106,9 @@ export default function UploadView() {
             </div>
           )}
 
-          {message && <div className="text-center text-red-600 font-semibold">{message}</div>}
-
           <TableResumen
             data={data}
             lateLabel={getLateLabel(selected)}
-            sourceFile={file}
-            fechaISO={fechaISO}
-            toParserDetalles={toParserDetalles}
-            onSaved={() => toast.success("Guardado")}
-            disableSave={selected === "SUN_5P"}
             onClear={handleClear}
           />
         </div>

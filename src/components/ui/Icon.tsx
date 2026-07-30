@@ -2,10 +2,8 @@
 import React from "react";
 import { ICONS, type IconName } from "./icons";
 
-export type IconStyle = "outlined" | "rounded" | "sharp";
 export type IconProps = React.SVGAttributes<SVGSVGElement> & {
   name: string;
-  styleSet?: IconStyle;
   fill?: 0 | 1;
   grade?: -25 | 0 | 200;
   opticalSize?: 20 | 24 | 40 | 48;
@@ -19,7 +17,6 @@ export const Icon: React.FC<IconProps> = ({
   weight = 400,
   grade = 0,
   opticalSize = 24,
-  styleSet: _styleSet,
   ...rest
 }) => {
   const path = ICONS[name as IconName];

@@ -1,13 +1,8 @@
 import type { AreaResumen } from "../features/checkins/types/resumen";
 import { useMemo, useEffect, useRef, useState } from "react";
 import { IconButton, Icon } from "../components/ui";
-import type { ParserDetalle } from "../features/checkins/buildPayload";
-import SaveListModal from "../components/SaveListModal";
-import { buildPayload } from "../features/checkins/buildPayload";
-import { postLista } from "../api/client";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import * as toast from "../lib/toast";
-// + NUEVO import:
 import { applyTextFormat, type TextFormat, cycleFormat, FORMAT_LABEL } from "../utils/textFormatter";
 
 
@@ -16,16 +11,6 @@ import { applyTextFormat, type TextFormat, cycleFormat, FORMAT_LABEL } from "../
 interface TableResumenProps {
   data: AreaResumen[];
   lateLabel?: string;
-  showTotalsRow?: boolean;
-  onReorder?: (next: AreaResumen[]) => void;
-  /** Se invoca al confirmar edición con el nuevo orden (solo incluidos) y la lista de excluidos */
-  onCommit?: (payload: { included: AreaResumen[]; excludedKeys: string[] }) => void;
-
-  sourceFile?: File | null;
-  fechaISO?: string;
-  toParserDetalles?: (rows: AreaResumen[]) => ParserDetalle[];
-  onSaved?: () => void;
-  disableSave?: boolean;
   onClear?: () => void;
 }
 
@@ -34,22 +19,11 @@ const nf = new Intl.NumberFormat("es-PE");
 const keyOf = (x: AreaResumen, fallbackIndex: number) =>
   (x as any)?.id?.toString?.() ?? String(x.area ?? fallbackIndex);
 
-const TableResumen = ({
+  const TableResumen = ({
   data,
   lateLabel = "Llegaron después del umbral",
-  showTotalsRow = true,
-  onReorder,
-  onCommit,
-  sourceFile,
-  fechaISO,
-  toParserDetalles,
-  onSaved,
-  disableSave: _disableSave = false,
   onClear,
 }: TableResumenProps) => {
-  const [openSave, setOpenSave] = useState(false);
-  const [defaultName, setDefaultName] = useState<string>("");
-
   const [editMode, setEditMode] = useState(false);
   const [rows, setRows] = useState<AreaResumen[]>(data ?? []);
   const [showExcluded, setShowExcluded] = useState(false);
@@ -75,15 +49,6 @@ const TableResumen = ({
     }
 
   }, [data, editMode]);
-
-  // nombre por defecto del modal: puedes basarte en file.name o en fecha + servicio
-  useEffect(() => {
-    if (sourceFile?.name) {
-      setDefaultName(sourceFile.name);
-    } else if (fechaISO) {
-      setDefaultName(`Lista ${fechaISO}`);
-    }
-  }, [sourceFile, fechaISO]);
 
   // Filas visibles según showExcluded, searchTerm y sortColumn
   const visibleRows = useMemo(() => {
@@ -133,36 +98,6 @@ const TableResumen = ({
     return acc;
   }, [rows, excluded]);
 
-  // ⬇️ filas incluidas respetando orden + exclusiones
-  const includedRows: AreaResumen[] = useMemo(
-    () => rows.filter((r, i) => !excluded.has(keyOf(r, i))),
-    [rows, excluded]
-  );
-
-  async function handleConfirmSave({ nombre, clave }: { nombre: string; clave: string }) {
-    if (!sourceFile || !fechaISO || !toParserDetalles) return;
-    try {
-      // 1) mapear detalles desde las filas incluidas (orden + exclusiones)
-      const detalles = toParserDetalles(includedRows);
-      // 2) construir payload con nombre override
-      const payload = await buildPayload(
-        sourceFile,
-        fechaISO,
-        detalles,
-        "procesado",
-        nombre // 👈 overrideName
-      );
-      // 3) POST con header X-Save-Key
-      await postLista(payload, { saveKey: clave });
-      setOpenSave(false);
-      setEditMode(false);
-      onSaved?.();
-    } catch (e: any) {
-      toast.error(e?.message || "Error al guardar");
-    }
-  }
-
-
 
   function handleDragStart(ev: React.DragEvent<HTMLTableRowElement>) {
     const idx = Number(ev.currentTarget.dataset.index);
@@ -189,7 +124,6 @@ const TableResumen = ({
       const next = prev.slice();
       const [moved] = next.splice(from, 1);
       next.splice(to, 0, moved);
-      onReorder?.(next);
       return next;
     });
   }
@@ -210,21 +144,16 @@ const TableResumen = ({
   function handleCommit() {
     const included = rows.filter((r, i) => !excluded.has(keyOf(r, i)));
     setRows(included);
-    onCommit?.({ included, excludedKeys: Array.from(excluded) });
     // opcional: salir de edición al confirmar
     setEditMode(false);
   }
 
   function handleCopyTable() {
-    // Clave estable para exclusiones
-    const getKey = (x: AreaResumen, i: number) =>
-      (x as any)?.id?.toString?.() ?? String(x.area ?? i);
-
     // Filas a copiar: respetar orden actual, exclusiones y visibilidad
     const bodyRows = rows
       .map((r, i) => ({ r, i }))
       .filter(({ r, i }) =>
-        editMode && !showExcluded ? !excluded.has(getKey(r, i)) : true
+        editMode && !showExcluded ? !excluded.has(keyOf(r, i)) : true
       )
       .map(({ r }) => r);
 
@@ -480,30 +409,19 @@ const TableResumen = ({
             )}
           </tbody>
 
-          {showTotalsRow && (
-            <tfoot className="bg-gray-100 sticky bottom-0 z-10">
-              <tr className="border-t font-semibold">
-                <td className="px-2 py-2" />
-                {editMode && <td className="px-2 py-2" />}
-                <td className="px-4 py-2 text-right">
-                  Totales{totalExcluded > 0 ? ` (excluidas: ${totalExcluded})` : ""}:
-                </td>
-                <td className="px-4 py-2 text-center">{nf.format(totalVol)}</td>
-                <td className="px-4 py-2 text-center">{nf.format(totalLate)}</td>
-              </tr>
-            </tfoot>
-          )}
+          <tfoot className="bg-gray-100 sticky bottom-0 z-10">
+            <tr className="border-t font-semibold">
+              <td className="px-2 py-2" />
+              {editMode && <td className="px-2 py-2" />}
+              <td className="px-4 py-2 text-right">
+                Totales{totalExcluded > 0 ? ` (excluidas: ${totalExcluded})` : ""}:
+              </td>
+              <td className="px-4 py-2 text-center">{nf.format(totalVol)}</td>
+              <td className="px-4 py-2 text-center">{nf.format(totalLate)}</td>
+            </tr>
+          </tfoot>
         </table>
       </div>
-      {/* Modal de guardado */}
-      <SaveListModal
-        open={openSave}
-        defaultName={defaultName}
-        onClose={() => setOpenSave(false)}
-        onConfirm={(data) => {
-          void handleConfirmSave(data);
-        }}
-      />
     </div>
   );
 };

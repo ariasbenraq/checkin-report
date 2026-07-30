@@ -21,14 +21,3 @@ export function getServiceLabel(service: ServiceKey): string {
 export function getLateLabel(service: ServiceKey): string {
   return LATE_LABELS[service];
 }
-
-const SERVICE_NAMES: Record<ServiceKey, string> = {
-  SUN_8A: '1er. Servicio',
-  SUN_10A: '2do. Servicio',
-  SUN_12P: '3er. Servicio',
-  SUN_5P: 'Noches CDV',
-};
-
-export function getServiceName(service: ServiceKey): string {
-  return SERVICE_NAMES[service];
-}
