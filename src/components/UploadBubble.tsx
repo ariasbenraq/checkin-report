@@ -1,6 +1,5 @@
-// src/components/UploadBubble.tsx
 import { motion } from "framer-motion";
-import { Icon } from "./ui";
+import { FileText } from "lucide-react";
 
 export default function UploadBubble({
   onExpand,
@@ -8,14 +7,14 @@ export default function UploadBubble({
   busy,
   navHeight = 64,
   margin = 16,
-  compact = false,            // 👈 NUEVO
+  compact = false,
 }: {
   onExpand: () => void;
   fileName?: string | null;
   busy?: boolean;
   navHeight?: number;
   margin?: number;
-  compact?: boolean;          // 👈 NUEVO
+  compact?: boolean;
 }) {
   return (
     <motion.button
@@ -27,12 +26,11 @@ export default function UploadBubble({
       style={{ position: "fixed", left: margin, top: navHeight + margin }}
       className={`z-40 flex items-center gap-2 rounded-full bg-purple-600 text-white shadow-lg
                   focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500
-                  ${compact ? "p-3" : "px-4 py-2"}`}   // 👈 compact: círculo
+                  ${compact ? "p-3" : "px-4 py-2"}`}
       aria-label="Abrir cargador de PDF"
       title={busy ? "Procesando…" : fileName || "Subir PDF"}
     >
-      <Icon name="picture_as_pdf" />
-      {/* 👇 oculta el texto si compact */}
+      <FileText className="w-5 h-5" />
       {!compact && (
         <span className="text-sm max-w-[14rem] truncate">
           {busy ? "Procesando…" : fileName || "Subir PDF"}

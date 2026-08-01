@@ -2,19 +2,20 @@
 import { useEffect, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { Toaster } from "react-hot-toast";
-import Navbar from "./components/Navbar";
+import Layout from "./components/Layout";
 import UploadView from "./pages/UploadView";
+import UploadPage from "./pages/UploadPage";
 import Home from "./pages/Home";
 import AuthLanding from "./pages/AuthLanding";
 import PlanningCenterView from "./pages/PlanningCenterView";
 import { AnimatePresence } from "framer-motion";
 import PageFade from "./components/PageFade";
-import UploadDock from "./components/UploadDock";
 import { supabase } from "./lib/supabase";
 import { getSession } from "./utils/auth";
+import { ReportsCacheProvider } from "./contexts/ReportsCacheContext";
 
 export default function App() {
-  const [currentView, setCurrentView] = useState<"home" | "upload" | "planning-center">("upload");
+  const [currentView, setCurrentView] = useState<"home" | "upload" | "upload-page" | "planning-center">("upload-page");
   const [session, setSession] = useState<Session | null>(null);
   const [loadingSession, setLoadingSession] = useState(true);
 
@@ -45,8 +46,8 @@ export default function App() {
 
   if (loadingSession) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-100">
-        <div className="text-sm text-gray-600">Validando sesión...</div>
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="text-body-md text-on-surface-variant">Validando sesión...</div>
       </div>
     );
   }
@@ -56,61 +57,43 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <Toaster
-        position="top-right"
-        toastOptions={{
-          duration: 3000,
-          style: {
-            borderRadius: "8px",
-            background: "#1f2937",
-            color: "#f9fafb",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-          },
-          success: {
-            iconTheme: {
-              primary: "#10b981",
-              secondary: "#f9fafb",
+    <ReportsCacheProvider>
+      <Layout current={currentView} onNavigate={setCurrentView}>
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            duration: 3000,
+            style: {
+              borderRadius: "8px",
+              background: "hsl(var(--inverse-surface))",
+              color: "hsl(var(--inverse-on-surface))",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
             },
-          },
-          error: {
-            iconTheme: {
-              primary: "#ef4444",
-              secondary: "#f9fafb",
+            success: {
+              iconTheme: {
+                primary: "hsl(var(--tertiary))",
+                secondary: "hsl(var(--on-tertiary))",
+              },
             },
-          },
-        }}
-      />
-      <Navbar current={currentView} onNavigate={setCurrentView} />
-      {currentView === "upload" && (
-        <UploadDock
-          defaultExpanded={false}
-          className="fixed top-[72px] left-4 z-40 w-[20rem]"
-          onExtracted={(text, file) => {
-            window.dispatchEvent(
-              new CustomEvent("pdf:extracted", { detail: { text, file } })
-            );
+            error: {
+              iconTheme: {
+                primary: "hsl(var(--destructive))",
+                secondary: "hsl(var(--destructive-foreground))",
+              },
+            },
           }}
         />
-      )}
-      <main className="max-w-6xl mx-auto p-6">
         <AnimatePresence mode="wait">
           <div key={currentView}>
             <PageFade>
               {currentView === "home" && <Home />}
-              {currentView === "upload" && (
-                <>
-                  <h1 className="text-2xl font-bold text-center mb-6">
-                    Resumen Inventario Etiquetas
-                  </h1>
-                  <UploadView />
-                </>
-              )}
+              {currentView === "upload" && <UploadView />}
+              {currentView === "upload-page" && <UploadPage />}
               {currentView === "planning-center" && <PlanningCenterView />}
             </PageFade>
           </div>
         </AnimatePresence>
-      </main>
-    </div>
+      </Layout>
+    </ReportsCacheProvider>
   );
 }

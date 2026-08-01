@@ -44,15 +44,15 @@ export default function AuthLanding() {
       <div className="mx-auto flex max-w-7xl flex-col items-center justify-center px-6 py-12 md:px-8 lg:px-10">
         <div className="mb-8 text-center">
           <h1 className="mt-4 text-4xl font-extrabold leading-tight tracking-tight text-black md:text-5xl">
-            Logistica CDV
+            Logistica MirafloresCDV
           </h1>
           <p className="mx-auto mt-3 max-w-prose text-balance text-sm text-black/60 md:text-base">Inicia sesión para continuar</p>
         </div>
 
         <div className="w-full max-w-md rounded-2xl border border-black/10 bg-white/80 p-6 shadow-xl backdrop-blur">
           <header className="mb-4">
-            <h2 className="text-2xl font-semibold">Tu cuenta</h2>
-            <p className="text-sm text-black/60">Inicia sesión con tu correo y contraseña de Supabase.</p>
+            <h2 className="text-2xl font-semibold">Inicia sesion aqui</h2>
+            <p className="text-sm text-black/60">Inicia sesión con tu correo y contraseña.</p>
           </header>
 
           <form onSubmit={onSignin} className="space-y-4">
@@ -99,18 +99,17 @@ export default function AuthLanding() {
               disabled={!canSignin}
               className={`w-full rounded-lg px-4 py-2 text-sm font-semibold transition ${canSignin ? 'bg-sky-600 text-white hover:bg-sky-700' : 'cursor-not-allowed bg-sky-200 text-white'}`}
             >
-              {siLoading ? 'Accediendo…' : 'Entrar con Supabase'}
+              {siLoading ? 'Accediendo…' : 'Entrar'}
             </button>
           </form>
 
-          <div className="mt-4 flex items-center justify-between text-xs text-black/50">
-            <span>Autenticación gestionada por Supabase</span>
-            <a className="underline-offset-2 hover:underline" href="#recuperar">¿Olvidaste tu contraseña?</a>
+          <div className="mt-4 flex items-center justify-center text-xs text-black/50">
+            <a className="underline-offset-2 hover:underline" href="#recuperar">¿Olvidaste tu contraseña? Contacta al administrador.</a>
           </div>
         </div>
 
         <footer className="mt-10 text-center text-xs text-black/50">
-          <p><span className="opacity-75">© {new Date().getFullYear()} CheckIn Report.</span> Hecho con ♥ en React + Tailwind.</p>
+          <p><span className="opacity-75">© 2026 CheckIn Report.</span> Desarrollado por ariasbenraq.</p>
         </footer>
       </div>
     </div>

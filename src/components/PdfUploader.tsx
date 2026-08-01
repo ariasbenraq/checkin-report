@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import * as pdfjsLib from "pdfjs-dist";
 import "pdfjs-dist/build/pdf.worker.entry";
-import { Icon } from "./ui";
+import { UploadCloud, FileUp, Loader2 } from "lucide-react";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
@@ -20,6 +20,7 @@ const PdfUploader = ({ onExtracted, onBusyChange, onFileSelected }: PdfUploaderP
     e.preventDefault();
     if (e.dataTransfer.files[0]) {
       setFile(e.dataTransfer.files[0]);
+      onFileSelected?.(e.dataTransfer.files[0].name);
     }
   };
 
@@ -47,6 +48,7 @@ const PdfUploader = ({ onExtracted, onBusyChange, onFileSelected }: PdfUploaderP
       }
 
       setLoading(false);
+      onBusyChange?.(false);
       onExtracted(fullText, file);
     };
 
@@ -54,49 +56,67 @@ const PdfUploader = ({ onExtracted, onBusyChange, onFileSelected }: PdfUploaderP
   };
 
   return (
-    <div className="w-full max-w-md mx-auto p-6 bg-white rounded-xl shadow-md space-y-4 transition-all duration-300">
-      <label
-        htmlFor="file-upload"
-        // onClick={() => fileInputRef.current?.click()}
-        onDrop={handleDrop}
-        onDragOver={handleDragOver}
-        className="flex flex-col items-center justify-center px-6 py-10 border-2 border-dashed border-blue-400 rounded-xl cursor-pointer text-center hover:bg-blue-50 transition-colors"
-      >
-        <Icon name="upload_file" className="text-5xl text-blue-500 mb-2" opticalSize={48} />
-        <p className="text-gray-600">
-          Arrastra tu archivo PDF aquí o haz clic para seleccionar
+    <div
+      className="w-full h-full flex flex-col items-center justify-center gap-4 p-6"
+      onDrop={handleDrop}
+      onDragOver={handleDragOver}
+    >
+      <div className="w-16 h-16 rounded-2xl bg-primary-container/20 flex items-center justify-center">
+        {loading ? (
+          <Loader2 className="w-8 h-8 text-primary animate-spin" />
+        ) : (
+          <UploadCloud className="w-8 h-8 text-primary" />
+        )}
+      </div>
+
+      <div className="text-center">
+        <p className="text-body-md text-on-surface font-medium mb-1">
+          {file ? file.name : "Arrastra tu archivo PDF aquí"}
         </p>
-        <input
-          id="file-upload"
-          type="file"
-          accept=".pdf,application/pdf"
-          ref={fileInputRef}
-          className="hidden"
-          onChange={(e) => {
-            const f = e.target.files?.[0] || null;
-            setFile(f);
-            onFileSelected?.(f?.name || null);
-          }}
-        />
-      </label>
+        <p className="text-body-sm text-on-surface-variant">
+          {file ? "Listo para procesar" : "o haz clic para seleccionar"}
+        </p>
+      </div>
 
-      {file && (
-        <div className="text-center text-sm text-gray-700">
-          <strong>Archivo seleccionado:</strong> {file.name}
-        </div>
+      <input
+        id="file-upload"
+        type="file"
+        accept=".pdf,application/pdf"
+        ref={fileInputRef}
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0] || null;
+          setFile(f);
+          onFileSelected?.(f?.name || null);
+        }}
+      />
+
+      {!file ? (
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          className="px-5 py-2.5 rounded-xl bg-primary text-on-primary font-semibold text-body-md hover:bg-primary/90 transition-colors"
+        >
+          Seleccionar PDF
+        </button>
+      ) : (
+        <button
+          onClick={handleReadPDF}
+          disabled={loading}
+          className="px-5 py-2.5 rounded-xl bg-primary text-on-primary font-semibold text-body-md hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+        >
+          {loading ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Leyendo PDF...
+            </>
+          ) : (
+            <>
+              <FileUp className="w-4 h-4" />
+              Procesar PDF
+            </>
+          )}
+        </button>
       )}
-
-      <button
-        onClick={handleReadPDF}
-        disabled={!file || loading}
-        className={`w-full py-2 px-4 rounded font-bold transition-colors ${
-          file && !loading
-            ? "bg-blue-600 hover:bg-blue-700 text-white"
-            : "bg-gray-300 text-gray-600 cursor-not-allowed"
-        }`}
-      >
-        {loading ? "Leyendo PDF..." : "Procesar PDF"}
-      </button>
     </div>
   );
 };

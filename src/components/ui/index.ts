@@ -1,3 +1,2 @@
 // src/components/ui/index.ts
-export { Icon } from "./Icon";
-export { IconButton } from "./IconButton";
+// Icon system removed — use lucide-react directly in each component

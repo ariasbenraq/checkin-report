@@ -1,84 +1,99 @@
+import { BarChart3, Users, Heart, Clock, AlertTriangle } from "lucide-react";
+
 export default function Home() {
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold text-center">¿Cómo usar la app con tu PDF de Planning Center?</h1>
+    <div className="space-y-8">
+      <div className="flex justify-between items-end">
+        <div>
+          <h2 className="text-display font-display text-on-surface mb-1">Dashboard</h2>
+          <p className="text-body-md text-on-surface-variant">Overview of today's congregation metrics and volunteer activity.</p>
+        </div>
+      </div>
 
-      <section className="bg-white rounded-xl shadow p-5 space-y-4">
-        <h2 className="text-lg font-semibold">1) ¿Qué necesitas?</h2>
-        <ul className="list-disc pl-6 space-y-1 text-gray-700">
-          <li>Acceso a <strong>Planning Center &gt; Check-Ins</strong>.</li>
-          <li>Descargar un <strong>PDF</strong> del reporte del domingo.</li>
-          <li>Un navegador para abrir esta app.</li>
-        </ul>
-      </section>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="glass-card inner-glow rounded-xl p-6 flex flex-col relative overflow-hidden group">
+          <div className="absolute -right-4 -bottom-4 opacity-[0.03] group-hover:opacity-[0.07] transition-opacity">
+            <BarChart3 className="w-[120px] h-[120px]" />
+          </div>
+          <div className="flex items-center justify-between mb-4">
+            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+              <Users className="w-6 h-6" />
+            </div>
+            <span className="px-3 py-1 rounded-full bg-tertiary-fixed-dim/20 text-tertiary-fixed-dim text-label-caps font-semibold">+5.2%</span>
+          </div>
+          <p className="text-body-md text-on-surface-variant font-medium">Asistencia Total</p>
+          <div className="flex items-baseline gap-2 mt-1">
+            <h3 className="text-display text-on-surface">85%</h3>
+            <p className="text-body-sm text-on-surface-variant opacity-60">vs prev. month</p>
+          </div>
+        </div>
 
-      <section className="bg-white rounded-xl shadow p-5 space-y-4">
-        <h2 className="text-lg font-semibold">2) Cómo obtener el PDF correcto en Planning Center</h2>
-        <ol className="list-decimal pl-6 space-y-2 text-gray-700">
-          <li>Entra a <strong>Check-Ins &gt; Reportes</strong> y elige el domingo a procesar.</li>
-          <li>Configura:
-            <ul className="list-disc pl-6 mt-2 space-y-1">
-              <li><strong>Fecha:</strong> el domingo correspondiente.</li>
-              <li><strong>Agrupar por:</strong> <em>Grouped by Time</em>.</li>
-              <li>Verifica que el PDF muestre:
-                <div className="mt-1 rounded bg-gray-100 p-2 text-sm">
-                  Verano: Sunday 8:00a / 10:00a / 12:00p<br/>
-                  Invierno: Sunday 9:00a / 11:00a / 1:00p<br/>
-                  Grouped by Time: Sunday 6:00p
-                </div>
-              </li>
-              <li>Incluye a <strong>Voluntarios</strong> (y áreas).</li>
+        <div className="glass-card inner-glow rounded-xl p-6 flex flex-col relative overflow-hidden group">
+          <div className="absolute -right-4 -bottom-4 opacity-[0.03] group-hover:opacity-[0.07] transition-opacity">
+            <Heart className="w-[120px] h-[120px]" />
+          </div>
+          <div className="flex items-center justify-between mb-4">
+            <div className="w-12 h-12 rounded-xl bg-tertiary-container/10 flex items-center justify-center text-tertiary-container">
+              <Heart className="w-6 h-6" />
+            </div>
+            <span className="px-3 py-1 rounded-full bg-primary-fixed/20 text-primary-fixed-dim text-label-caps font-semibold">Active Now</span>
+          </div>
+          <p className="text-body-md text-on-surface-variant font-medium">Voluntarios Activos</p>
+          <div className="flex items-baseline gap-2 mt-1">
+            <h3 className="text-display text-on-surface">120</h3>
+            <p className="text-body-sm text-on-surface-variant opacity-60">Full capacity</p>
+          </div>
+        </div>
+
+        <div className="glass-card inner-glow rounded-xl p-6 flex flex-col relative overflow-hidden group">
+          <div className="absolute -right-4 -bottom-4 opacity-[0.03] group-hover:opacity-[0.07] transition-opacity">
+            <Clock className="w-[120px] h-[120px]" />
+          </div>
+          <div className="flex items-center justify-between mb-4">
+            <div className="w-12 h-12 rounded-xl bg-destructive-container/20 flex items-center justify-center text-destructive">
+              <AlertTriangle className="w-6 h-6" />
+            </div>
+            <span className="px-3 py-1 rounded-full bg-destructive-container/20 text-destructive text-label-caps font-semibold">Needs Attention</span>
+          </div>
+          <p className="text-body-md text-on-surface-variant font-medium">Llegadas Tardías</p>
+          <div className="flex items-baseline gap-2 mt-1">
+            <h3 className="text-display text-on-surface">12</h3>
+            <p className="text-body-sm text-on-surface-variant opacity-60">Today's count</p>
+          </div>
+        </div>
+      </div>
+
+      <section className="glass-card inner-glow rounded-xl p-6 space-y-4">
+        <h3 className="text-headline-sm text-on-surface">¿Cómo usar la app con tu PDF de Planning Center?</h3>
+        
+        <div className="space-y-4">
+          <div className="p-4 bg-surface-container-low border border-outline-variant/10 rounded-xl">
+            <h4 className="font-semibold text-body-md text-on-surface mb-2">1) ¿Qué necesitas?</h4>
+            <ul className="list-disc pl-6 space-y-1 text-on-surface-variant">
+              <li>Acceso a <strong>Planning Center &gt; Check-Ins</strong>.</li>
+              <li>Descargar un <strong>PDF</strong> del reporte del domingo.</li>
+              <li>Un navegador para abrir esta app.</li>
             </ul>
-          </li>
-          <li>Descarga como <strong>PDF</strong>.</li>
-        </ol>
-        <p className="text-sm text-gray-500">
-          No edites el PDF. La app necesita esos textos tal cual (encabezados y horas como <em>7:23am</em>).
-        </p>
-      </section>
+          </div>
 
-      <section className="bg-white rounded-xl shadow p-5 space-y-4">
-        <h2 className="text-lg font-semibold">3) Procesar el PDF en esta app</h2>
-        <ol className="list-decimal pl-6 space-y-2 text-gray-700">
-          <li>Ve a <strong>Cargar PDF</strong>.</li>
-          <li>Arrastra o selecciona el archivo y pulsa <strong>Procesar PDF</strong>.</li>
-          <li>Elige <strong>Horario de verano</strong> o <strong>Horario de invierno</strong> antes de revisar los servicios.</li>
-          <li>Cambia entre servicios con los botones <strong>1er / 2do / 3er servicio / NochesCDV</strong>.</li>
-        </ol>
-      </section>
+          <div className="p-4 bg-surface-container-low border border-outline-variant/10 rounded-xl">
+            <h4 className="font-semibold text-body-md text-on-surface mb-2">2) Procesar el PDF</h4>
+            <ol className="list-decimal pl-6 space-y-2 text-on-surface-variant">
+              <li>Ve a <strong>Reports</strong> en el sidebar.</li>
+              <li>Arrastra o selecciona el archivo y pulsa <strong>Procesar PDF</strong>.</li>
+              <li>Cambia entre servicios con los botones <strong>1er / 2do / 3er servicio / NochesCDV</strong>.</li>
+            </ol>
+          </div>
 
-      <section className="bg-white rounded-xl shadow p-5 space-y-4">
-        <h2 className="text-lg font-semibold">4) ¿Cómo leer la tabla?</h2>
-        <ul className="list-disc pl-6 space-y-2 text-gray-700">
-          <li><strong>Total voluntarios:</strong> personas listadas en esa <em>área</em> para el servicio seleccionado.</li>
-          <li><strong>Llegaron después del umbral:</strong> compara la hora de llegada con:
-            <div className="mt-1 rounded bg-gray-100 p-2 text-sm">
-                Verano: 8:00a → &gt; 7:00am &nbsp;|&nbsp; 10:00a → &gt; 9:30am &nbsp;|&nbsp; 12:00p → &gt; 11:30am
-                <br />
-                Invierno: 9:00a → &gt; 8:30am &nbsp;|&nbsp; 11:00a → &gt; 10:30am &nbsp;|&nbsp; 1:00p → &gt; 12:30pm
-                <br />
-                NochesCDV → &gt; 5:30pm
-              </div>
-          </li>
-        </ul>
-      </section>
-
-      <section className="bg-white rounded-xl shadow p-5 space-y-4">
-        <h2 className="text-lg font-semibold">5) Exportar o compartir</h2>
-        <ul className="list-disc pl-6 space-y-1 text-gray-700">
-          <li><strong>Copiar tabla</strong>: copia los datos al portapapeles.</li>
-          <li><strong>Exportar Excel</strong>: descarga un .xlsx con los datos del horario actual.</li>
-          <li><strong>NochesCDV</strong>: por ahora se puede procesar y exportar, pero no guardar en backend.</li>
-        </ul>
-      </section>
-
-      <section className="bg-white rounded-xl shadow p-5 space-y-3">
-        <h2 className="text-lg font-semibold">6) Consejos y resolución de problemas</h2>
-        <ul className="list-disc pl-6 space-y-2 text-gray-700">
-          <li>Si un horario sale en cero, confirma que el PDF tiene el encabezado correcto para ese horario.</li>
-          <li>Si una <em>área</em> no aparece, revisa la ortografía en el PDF (debe coincidir con los nombres esperados).</li>
-          <li>Una persona inscrita en varios servicios puede aparecer en varias secciones; su llegada se compara con el umbral del horario que estás viendo.</li>
-        </ul>
+          <div className="p-4 bg-surface-container-low border border-outline-variant/10 rounded-xl">
+            <h4 className="font-semibold text-body-md text-on-surface mb-2">3) Consejos</h4>
+            <ul className="list-disc pl-6 space-y-1 text-on-surface-variant">
+              <li>Si un horario sale en cero, confirma que el PDF tiene el encabezado correcto.</li>
+              <li>Si una área no aparece, revisa la ortografía en el PDF.</li>
+              <li><strong>Copiar tabla</strong>: copia los datos al portapapeles.</li>
+            </ul>
+          </div>
+        </div>
       </section>
     </div>
   );
