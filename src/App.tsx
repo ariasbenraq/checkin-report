@@ -4,9 +4,7 @@ import type { Session } from "@supabase/supabase-js";
 import { Toaster } from "react-hot-toast";
 import Navbar from "./components/Navbar";
 import UploadView from "./pages/UploadView";
-import Home from "./pages/Home";
 import AuthLanding from "./pages/AuthLanding";
-import PlanningCenterView from "./pages/PlanningCenterView";
 import AdminDashboard from "./pages/AdminDashboard";
 import { AnimatePresence } from "framer-motion";
 import PageFade from "./components/PageFade";
@@ -17,7 +15,7 @@ import { getSession } from "./utils/auth";
 import { isAdmin } from "./utils/admin";
 
 export default function App() {
-  const [currentView, setCurrentView] = useState<"home" | "upload" | "planning-center" | "admin">("upload");
+  const [currentView, setCurrentView] = useState<"upload" | "admin">("upload");
   const [session, setSession] = useState<Session | null>(null);
   const [loadingSession, setLoadingSession] = useState(true);
   const [userIsAdmin, setUserIsAdmin] = useState(false);
@@ -112,7 +110,6 @@ export default function App() {
           <AnimatePresence mode="wait">
             <div key={currentView}>
               <PageFade>
-                {currentView === "home" && <Home />}
                 {currentView === "upload" && (
                   <>
                     <h1 className="text-2xl font-bold text-center mb-6">
@@ -121,7 +118,6 @@ export default function App() {
                     <UploadView />
                   </>
                 )}
-                {currentView === "planning-center" && <PlanningCenterView />}
                 {currentView === "admin" && userIsAdmin && <AdminDashboard />}
               </PageFade>
             </div>
