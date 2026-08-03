@@ -7,16 +7,20 @@ import UploadView from "./pages/UploadView";
 import Home from "./pages/Home";
 import AuthLanding from "./pages/AuthLanding";
 import PlanningCenterView from "./pages/PlanningCenterView";
+import AdminDashboard from "./pages/AdminDashboard";
 import { AnimatePresence } from "framer-motion";
 import PageFade from "./components/PageFade";
 import UploadDock from "./components/UploadDock";
+import ErrorBoundary from "./components/ErrorBoundary";
 import { supabase } from "./lib/supabase";
 import { getSession } from "./utils/auth";
+import { isAdmin } from "./utils/admin";
 
 export default function App() {
-  const [currentView, setCurrentView] = useState<"home" | "upload" | "planning-center">("upload");
+  const [currentView, setCurrentView] = useState<"home" | "upload" | "planning-center" | "admin">("upload");
   const [session, setSession] = useState<Session | null>(null);
   const [loadingSession, setLoadingSession] = useState(true);
+  const [userIsAdmin, setUserIsAdmin] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -25,6 +29,11 @@ export default function App() {
       .then((currentSession) => {
         if (!mounted) return;
         setSession(currentSession);
+        if (currentSession) {
+          isAdmin().then((admin) => {
+            if (mounted) setUserIsAdmin(admin);
+          });
+        }
       })
       .finally(() => {
         if (mounted) setLoadingSession(false);
@@ -35,6 +44,11 @@ export default function App() {
     } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       setSession(nextSession);
       setLoadingSession(false);
+      if (nextSession) {
+        isAdmin().then((admin) => setUserIsAdmin(admin));
+      } else {
+        setUserIsAdmin(false);
+      }
     });
 
     return () => {
@@ -81,7 +95,7 @@ export default function App() {
           },
         }}
       />
-      <Navbar current={currentView} onNavigate={setCurrentView} />
+      <Navbar current={currentView} onNavigate={setCurrentView} isAdmin={userIsAdmin} />
       {currentView === "upload" && (
         <UploadDock
           defaultExpanded={false}
@@ -94,22 +108,25 @@ export default function App() {
         />
       )}
       <main className="max-w-6xl mx-auto p-6">
-        <AnimatePresence mode="wait">
-          <div key={currentView}>
-            <PageFade>
-              {currentView === "home" && <Home />}
-              {currentView === "upload" && (
-                <>
-                  <h1 className="text-2xl font-bold text-center mb-6">
-                    Resumen Inventario Etiquetas
-                  </h1>
-                  <UploadView />
-                </>
-              )}
-              {currentView === "planning-center" && <PlanningCenterView />}
-            </PageFade>
-          </div>
-        </AnimatePresence>
+        <ErrorBoundary component="App">
+          <AnimatePresence mode="wait">
+            <div key={currentView}>
+              <PageFade>
+                {currentView === "home" && <Home />}
+                {currentView === "upload" && (
+                  <>
+                    <h1 className="text-2xl font-bold text-center mb-6">
+                      Resumen Inventario Etiquetas
+                    </h1>
+                    <UploadView />
+                  </>
+                )}
+                {currentView === "planning-center" && <PlanningCenterView />}
+                {currentView === "admin" && userIsAdmin && <AdminDashboard />}
+              </PageFade>
+            </div>
+          </AnimatePresence>
+        </ErrorBoundary>
       </main>
     </div>
   );

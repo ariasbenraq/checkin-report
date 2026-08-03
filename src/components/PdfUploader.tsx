@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import * as pdfjsLib from "pdfjs-dist";
 import "pdfjs-dist/build/pdf.worker.entry";
 import { Icon } from "./ui";
+import { logPdfProcessing, logError } from "../utils/logger";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
@@ -34,20 +35,42 @@ const PdfUploader = ({ onExtracted, onBusyChange, onFileSelected }: PdfUploaderP
 
     const reader = new FileReader();
     reader.onload = async () => {
-      const typedArray = new Uint8Array(reader.result as ArrayBuffer);
-      const pdf = await pdfjsLib.getDocument({ data: typedArray }).promise;
+      try {
+        const typedArray = new Uint8Array(reader.result as ArrayBuffer);
+        const pdf = await pdfjsLib.getDocument({ data: typedArray }).promise;
 
-      let fullText = "";
+        let fullText = "";
 
-      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-        const page = await pdf.getPage(pageNum);
-        const content = await page.getTextContent();
-        const strings = content.items.map((item: any) => item.str);
-        fullText += strings.join(" ") + "\n";
+        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+          const page = await pdf.getPage(pageNum);
+          const content = await page.getTextContent();
+          const strings = content.items.map((item: any) => item.str);
+          fullText += strings.join(" ") + "\n";
+        }
+
+        await logPdfProcessing({
+          fileName: file.name,
+          status: "success",
+          rowsProcessed: pdf.numPages,
+        });
+
+        setLoading(false);
+        onExtracted(fullText, file);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : "Error desconocido";
+        await logPdfProcessing({
+          fileName: file.name,
+          status: "error",
+          errorMessage,
+        });
+        await logError({
+          errorType: "PDFProcessingError",
+          errorMessage,
+          component: "PdfUploader",
+        });
+        setLoading(false);
+        onBusyChange?.(false);
       }
-
-      setLoading(false);
-      onExtracted(fullText, file);
     };
 
     reader.readAsArrayBuffer(file);

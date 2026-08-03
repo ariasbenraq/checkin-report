@@ -6,8 +6,9 @@ import type { User } from '@supabase/supabase-js';
 import { getCurrentUser, getDisplayName, signOut } from '../utils/auth';
 
 interface NavbarProps {
-  current: 'home' | 'upload' | 'planning-center';
-  onNavigate: (view: 'home' | 'upload' | 'planning-center') => void;
+  current: 'home' | 'upload' | 'planning-center' | 'admin';
+  onNavigate: (view: 'home' | 'upload' | 'planning-center' | 'admin') => void;
+  isAdmin: boolean;
 }
 
 const navigation = [
@@ -16,11 +17,15 @@ const navigation = [
   { name: 'Planning Center', key: 'planning-center' },
 ];
 
+const adminNavigation = [
+  { name: 'Monitoreo', key: 'admin' },
+];
+
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ');
 }
 
-export default function Navbar({ current, onNavigate }: NavbarProps) {
+export default function Navbar({ current, onNavigate, isAdmin }: NavbarProps) {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
@@ -56,13 +61,27 @@ export default function Navbar({ current, onNavigate }: NavbarProps) {
                         {item.name}
                       </button>
                     ))}
+                    {isAdmin && adminNavigation.map((item) => (
+                      <button
+                        key={item.key}
+                        onClick={() => onNavigate(item.key as NavbarProps['current'])}
+                        className={classNames(
+                          current === item.key
+                            ? 'bg-gray-900 text-white'
+                            : 'text-gray-300 hover:bg-gray-700 hover:text-white',
+                          'px-3 py-2 rounded-md text-sm font-medium'
+                        )}
+                      >
+                        {item.name}
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>
 
               {/* DERECHA: usuario + cerrar sesión (desktop) */}
               <div className="hidden sm:flex items-center gap-3">
-                <span className="text-gray-300 text-sm">Hola, <strong className="text-white">{username}</strong></span>
+                <span className="text-gray-300 text-sm">Hola, <strong className="text-white">{username}</strong> <span className="text-xs text-gray-500">({user?.email})</span></span>
                 <button
                   onClick={() => void signOut()}
                   className="px-3 py-2 rounded-md text-sm font-medium bg-red-600 text-white hover:bg-red-700"
@@ -104,12 +123,28 @@ export default function Navbar({ current, onNavigate }: NavbarProps) {
                   {item.name}
                 </DisclosureButton>
               ))}
+              {isAdmin && adminNavigation.map((item) => (
+                <DisclosureButton
+                  key={item.key}
+                  as="button"
+                  onClick={() => onNavigate(item.key as NavbarProps['current'])}
+                  className={classNames(
+                    current === item.key
+                      ? 'bg-gray-900 text-white'
+                      : 'text-gray-300 hover:bg-gray-700 hover:text-white',
+                    'block px-3 py-2 rounded-md text-base font-medium w-full text-left'
+                  )}
+                >
+                  {item.name}
+                </DisclosureButton>
+              ))}
             </div>
 
             {/* Bloque inferior: usuario + cerrar sesión (móvil) */}
             <div className="border-t border-gray-700 px-4 py-3 flex items-center justify-between">
               <div className="text-gray-300 text-sm">
                 Sesión: <span className="text-white font-semibold">{username}</span>
+                <span className="text-xs text-gray-500 block">{user?.email}</span>
               </div>
               <button
                 onClick={() => void signOut()}
