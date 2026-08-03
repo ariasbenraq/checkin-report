@@ -124,6 +124,51 @@ function resolveServiceByHeading(fullHeadingLine: string): ServiceTimeConfig | n
     return getServiceTimes().find(s => s.heading.toLowerCase() === head) ?? null;
 }
 
+// ---------- Validación de PDF ----------
+export interface PdfValidationResult {
+    isValid: boolean;
+    errors: string[];
+    warnings: string[];
+}
+
+export function validatePdfContent(text: string): PdfValidationResult {
+    const errors: string[] = [];
+    const warnings: string[] = [];
+
+    if (!text || text.trim().length === 0) {
+        errors.push("El PDF está vacío o no se pudo extraer texto");
+        return { isValid: false, errors, warnings };
+    }
+
+    const sections = splitByServiceSections(text);
+
+    if (sections.length === 0) {
+        errors.push("No se encontraron secciones de servicio (Grouped by Time). El PDF no contiene el formato esperado de Planning Center.");
+        return { isValid: false, errors, warnings };
+    }
+
+    const matchedSections = sections.filter((sec) => resolveServiceByHeading(sec.heading) !== null);
+
+    if (matchedSections.length === 0) {
+        errors.push("Se encontraron encabezados de servicio pero ninguno coincide con los servicios configurados (1er, 2do, 3er Servicio, Noche CDV).");
+        return { isValid: false, errors, warnings };
+    }
+
+    if (matchedSections.length < sections.length) {
+        warnings.push(`${sections.length - matchedSections.length} sección(es) ignorada(s) por no coincidir con servicios configurados.`);
+    }
+
+    const hasAreas = Object.keys(AREA_PATTERNS).some((pattern) =>
+        clean(text).includes(clean(pattern))
+    );
+
+    if (!hasAreas) {
+        warnings.push("No se encontraron áreas conocidas en el PDF.");
+    }
+
+    return { isValid: errors.length === 0, errors, warnings };
+}
+
 // ---------- API principal: devuelve 3 arreglos ----------
 export function parsePdfTextAllServices(
     text: string

@@ -7,7 +7,13 @@ export type LogAction =
   | "pdf_process_success"
   | "pdf_process_error"
   | "admin_view"
-  | "app_error";
+  | "app_error"
+  | "login_success"
+  | "login_failure"
+  | "logout"
+  | "service_viewed"
+  | "pdf_validation_error"
+  | "session_expired";
 
 interface LogEntry {
   action: LogAction;
@@ -189,4 +195,86 @@ export async function fetchRecentErrors(limit = 10): Promise<ErrorLog[]> {
     return [];
   }
   return data ?? [];
+}
+
+// =====================================================
+// Funciones de métricas para el dashboard
+// =====================================================
+
+export async function fetchLoginStats(): Promise<{
+  totalLogins: number;
+  successfulLogins: number;
+  failedLogins: number;
+  uniqueUsers: number;
+}> {
+  const { data, error } = await supabase
+    .from("app_logs")
+    .select("action, user_id")
+    .in("action", ["login_success", "login_failure"]);
+
+  if (error || !data) {
+    return { totalLogins: 0, successfulLogins: 0, failedLogins: 0, uniqueUsers: 0 };
+  }
+
+  const successful = data.filter((r) => r.action === "login_success");
+  const failed = data.filter((r) => r.action === "login_failure");
+  const uniqueUserIds = new Set(successful.map((r) => r.user_id).filter(Boolean));
+
+  return {
+    totalLogins: data.length,
+    successfulLogins: successful.length,
+    failedLogins: failed.length,
+    uniqueUsers: uniqueUserIds.size,
+  };
+}
+
+export async function fetchServiceViewStats(): Promise<Record<string, number>> {
+  const { data, error } = await supabase
+    .from("app_logs")
+    .select("details")
+    .eq("action", "service_viewed");
+
+  if (error || !data) {
+    return {};
+  }
+
+  const stats: Record<string, number> = {};
+  for (const row of data) {
+    const service = (row.details as Record<string, unknown>)?.service as string;
+    if (service) {
+      stats[service] = (stats[service] || 0) + 1;
+    }
+  }
+  return stats;
+}
+
+export async function fetchPdfValidationErrorStats(): Promise<{
+  total: number;
+  errors: Array<{ message: string; count: number }>;
+}> {
+  const { data, error } = await supabase
+    .from("app_logs")
+    .select("details")
+    .eq("action", "pdf_validation_error");
+
+  if (error || !data) {
+    return { total: 0, errors: [] };
+  }
+
+  const errorCounts: Record<string, number> = {};
+  for (const row of data) {
+    const details = row.details as Record<string, unknown>;
+    const errors = details?.errors as string[] | undefined;
+    if (errors && Array.isArray(errors)) {
+      for (const msg of errors) {
+        errorCounts[msg] = (errorCounts[msg] || 0) + 1;
+      }
+    }
+  }
+
+  const sortedErrors = Object.entries(errorCounts)
+    .map(([message, count]) => ({ message, count }))
+    .sort((a, b) => b.count - a.count);
+
+  return { total: data.length, errors: sortedErrors };
 }

@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import TableResumen from "../components/TableResumen";
 import type { AreaResumen } from "../features/checkins/types/resumen";
-import { parsePdfTextAllServices } from "../utils/pdfParser";
+import { parsePdfTextAllServices, validatePdfContent } from "../utils/pdfParser";
 import {
   getLateLabel,
   type ServiceKey,
@@ -10,6 +10,7 @@ import {
 import { ServicePicker } from "../components/ServicePicker";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import * as toast from "../lib/toast";
+import { logAppEvent } from "../utils/logger";
 
 
 function getVolunteerCount(rows: AreaResumen[] | undefined): number {
@@ -39,8 +40,37 @@ export default function UploadView() {
     toast.success("Tabla limpiada");
   };
 
+  // Logging de servicio seleccionado
+  useEffect(() => {
+    if (selected) {
+      logAppEvent({
+        action: "service_viewed",
+        details: { service: selected },
+      });
+    }
+  }, [selected]);
+
   useEffect(() => {
     if (!extractedText) return;
+
+    const validation = validatePdfContent(extractedText);
+
+    if (!validation.isValid) {
+      logAppEvent({
+        action: "pdf_validation_error",
+        details: {
+          errors: validation.errors,
+          warnings: validation.warnings,
+        },
+      });
+      setMessage(validation.errors[0]);
+      setByService({ SUN_8A: [], SUN_10A: [], SUN_12P: [], SUN_5P: [] });
+      return;
+    }
+
+    if (validation.warnings.length > 0) {
+      console.warn("[PDF Validation] Warnings:", validation.warnings);
+    }
 
     const all = parsePdfTextAllServices(extractedText);
     setByService(all);

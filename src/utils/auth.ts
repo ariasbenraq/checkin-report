@@ -1,24 +1,49 @@
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "../lib/supabase";
+import { logAppEvent } from "./logger";
 
 export async function signIn(email: string, password: string) {
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: email.trim(),
-    password,
-  });
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
 
-  if (error) {
-    throw new Error(error.message);
+    if (error) {
+      await logAppEvent({
+        action: "login_failure",
+        details: { email, error: error.message },
+      });
+      throw new Error(error.message);
+    }
+
+    if (!data.session) {
+      await logAppEvent({
+        action: "login_failure",
+        details: { email, error: "No session returned" },
+      });
+      throw new Error("Supabase no devolvió una sesión activa.");
+    }
+
+    await logAppEvent({
+      action: "login_success",
+      details: { email },
+    });
+
+    return data.session;
+  } catch (err) {
+    if (err instanceof Error && err.message !== "Supabase no devolvió una sesión activa.") {
+      await logAppEvent({
+        action: "login_failure",
+        details: { email, error: String(err) },
+      });
+    }
+    throw err;
   }
-
-  if (!data.session) {
-    throw new Error("Supabase no devolvió una sesión activa.");
-  }
-
-  return data.session;
 }
 
 export async function signOut() {
+  await logAppEvent({ action: "logout" });
   const { error } = await supabase.auth.signOut();
   if (error) {
     throw new Error(error.message);
@@ -54,5 +79,10 @@ export function getDisplayName(user: User | null): string {
     user.email ||
     "Usuario"
   );
+}
+
+export function isSessionExpired(session: Session): boolean {
+  const expiresAt = session.expires_at ?? 0;
+  return Date.now() / 1000 > expiresAt;
 }
 

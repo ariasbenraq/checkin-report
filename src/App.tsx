@@ -11,8 +11,10 @@ import PageFade from "./components/PageFade";
 import UploadDock from "./components/UploadDock";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { supabase } from "./lib/supabase";
-import { getSession } from "./utils/auth";
+import { getSession, isSessionExpired, signOut } from "./utils/auth";
 import { isAdmin } from "./utils/admin";
+import { logAppEvent } from "./utils/logger";
+import toast from "react-hot-toast";
 
 export default function App() {
   const [currentView, setCurrentView] = useState<"upload" | "admin">("upload");
@@ -54,6 +56,24 @@ export default function App() {
       subscription.unsubscribe();
     };
   }, []);
+
+  // Timer de sesión - verificar expiración cada minuto
+  useEffect(() => {
+    if (!session) return;
+
+    const checkSession = async () => {
+      if (isSessionExpired(session)) {
+        await logAppEvent({ action: "session_expired" });
+        await signOut();
+        toast.error("Sesión expirada. Por favor, inicie sesión nuevamente.");
+      }
+    };
+
+    const interval = setInterval(checkSession, 60000);
+    checkSession();
+
+    return () => clearInterval(interval);
+  }, [session]);
 
   if (loadingSession) {
     return (
