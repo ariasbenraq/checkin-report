@@ -37,4 +37,29 @@ export const ALL_AREAS = [
   // agrega/ordena aquí todas las que uses
 ] as const;
 
+export const PUNTO_AREAS = [
+  'Alabanzas',
+  'Comms Punto',
+  'Experiencia Patio',
+  'Atmósfera',
+  'Alabanza',
+  'Flow Punto',
+  'Líder de servicio',
+  'Loom',
+  'Cámaras Punto',
+  'Crecer Punto',
+  'Grupos Pequeños',
+  'Logística',
+  'Luces',
+  'Mantenimiento Punto',
+  'Producción',
+  'Registro Punto',
+  'Reps',
+  'Seguridad',
+  'Sonido',
+  'Visuales',
+  'Voluntarios',
+  'Punto ED',
+] as const;
+
 export type AreaName = typeof ALL_AREAS[number];
